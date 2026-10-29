@@ -2,7 +2,7 @@
 
 **Image Processing Fundamentals: an interactive walkthrough of Pillow and OpenCV operations.**
 
-PixOps 101 is built from **Module 2 of the *Introduction to Computer Vision and Image Processing* course** (IBM Skills Network, CV0101EN). It covers the operations from that module's labs, one page each:
+I built PixOps 101 from **Module 2 of the *Introduction to Computer Vision and Image Processing* course** (IBM Skills Network, CV0101EN). It covers the operations from that module's labs, one page each:
 
 | Labs | Topic | Operations |
 | --- | --- | --- |
