@@ -26,6 +26,7 @@ OPS.forEach(op => {
   op.defaults = { ...op.s };
 });
 const groupOf = op => GROUPS.find(g => g.id === op.group);
+GROUPS.forEach((g, gi) => OPS.filter(o => o.group === g.id).forEach((o, oi) => { o.num = `${gi + 1}.${oi + 1}`; }));
 const ctlFor = (op, key) => op.controls.find(c => c.key === key && (!c.show || c.show(op.s))) || op.byKey[key];
 
 /* ---------- theme ---------- */
@@ -40,12 +41,27 @@ $("pageReset").addEventListener("click", () => cur && startOver(cur));
 $("themeBtn").addEventListener("click", () => { const next = effectiveDark() ? "light" : "dark"; document.documentElement.setAttribute("data-theme", next); store.set("pixelops-theme", next); });
 
 /* ---------- side nav ---------- */
-GROUPS.forEach(g => {
-  const box = el("div", "nav-group"), cat = el("div", "nav-cat"); cat.append(el("h2", "", esc(g.title)), el("span", "", esc(g.lab))); box.appendChild(cat);
-  const ol = el("ol");
-  OPS.filter(o => o.group === g.id).forEach(o => { const li = el("li"), a = el("a", "", `<span>${esc(o.title)}</span>${ICON.check}`); a.href = "#" + o.id; li.appendChild(a); ol.appendChild(li); o.menuLink = a; });
-  box.appendChild(ol); $("navList").appendChild(box);
+{ const ov = el("div", "nav-group nav-home"), a = el("a", "", '<span>Overview</span>'); a.href = "#overview"; a.id = "homeLink"; ov.appendChild(a); $("navList").appendChild(ov); }
+const GROUP_ICON = {
+  pixels: '<rect x="2.5" y="2.5" width="6.5" height="6.5"/><rect x="11" y="2.5" width="6.5" height="6.5"/><rect x="2.5" y="11" width="6.5" height="6.5"/><rect x="11" y="11" width="6.5" height="6.5" fill="currentColor"/>',
+  manipulation: '<path d="M5.5 1.5v13h13"/><path d="M1.5 5.5h13v13"/>',
+  intensity: '<path d="M2 18h16"/><rect x="3.5" y="10" width="3" height="8"/><rect x="8.5" y="4" width="3" height="14"/><rect x="13.5" y="12.5" width="3" height="5.5"/>',
+  geometry: '<path d="M16.5 10a6.5 6.5 0 1 1-2-4.7"/><path d="M15 1.8v3.8h-3.8"/><path d="M7 13l3-6 3 6z"/>',
+  filtering: '<path d="M2.5 3.5h15l-6 7.5v5.5l-3 1.5v-7z"/>',
+};
+const navGroups = [];
+GROUPS.forEach((g, gi) => {
+  const box = el("div", "nav-group"), ol = el("ol"), id = "navg-" + g.id;
+  const head = el("button", "nav-cat"); head.type = "button"; head.setAttribute("aria-controls", id);
+  head.innerHTML = `<svg class="gi" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round">${GROUP_ICON[g.id] || ""}</svg><span class="nav-cat-t"><span class="h">${esc(g.title)}</span><span class="s">Exercise ${gi + 1}</span></span>${ICON.chevD}`;
+  ol.id = id; box.append(head, ol);
+  OPS.filter(o => o.group === g.id).forEach(o => { const li = el("li"), a = el("a", "", `<span><span class="num">${o.num}</span>${esc(o.title)}</span>${ICON.check}`); a.href = "#" + o.id; li.appendChild(a); ol.appendChild(li); o.menuLink = a; });
+  head.addEventListener("click", () => expandGroup(head.getAttribute("aria-expanded") === "true" ? null : g.id));
+  navGroups.push({ g, head, ol, box }); $("navList").appendChild(box);
 });
+/* accordion: one topic open at a time */
+function expandGroup(gid) { navGroups.forEach(n => { const on = n.g.id === gid; n.head.setAttribute("aria-expanded", on); n.ol.hidden = !on; n.box.classList.toggle("open", on); n.box.classList.toggle("current", !!cur && cur.group === n.g.id); }); }
+expandGroup(null);
 const setMenu = open => { $("nav").classList.toggle("open", open); $("overlay").classList.toggle("open", open); $("menuBtn").setAttribute("aria-expanded", open); };
 $("menuBtn").addEventListener("click", () => setMenu(!$("nav").classList.contains("open")));
 $("overlay").addEventListener("click", () => setMenu(false));
@@ -253,13 +269,15 @@ const isDefault = op => Object.keys(op.defaults).every(k => op.s[k] === op.defau
 function resetOp(op) { Object.keys(op.s).forEach(k => { if (k !== "lib" && !(k in op.defaults)) delete op.s[k]; }); Object.assign(op.s, op.defaults); update(op, true); }
 
 function open(op) {
+  document.body.classList.remove("landing"); $("homeLink").classList.remove("on"); $("homeLink").removeAttribute("aria-current");
   cur = op; op.hlKey = null;
   const i = OPS.indexOf(op), g = groupOf(op), wz = $("wizard"); wz.innerHTML = "";
   document.title = op.title + " · PixOps 101";
   $("crumb").textContent = `${g.title} / ${op.title}`;
+  expandGroup(op.group);
   OPS.forEach(o => { o.menuLink.classList.toggle("on", o === op); o.menuLink.classList.toggle("done", o.step >= 3); if (o === op) o.menuLink.setAttribute("aria-current", "page"); else o.menuLink.removeAttribute("aria-current"); });
 
-  const head = el("header", "wz-head"); head.append(el("span", "eyebrow", `${esc(g.lab)} · Operation ${i + 1} of ${OPS.length}`), el("h1", "", esc(op.title))); wz.appendChild(head);
+  const head = el("header", "wz-head"); head.append(el("span", "eyebrow", `Exercise ${op.num} · ${esc(g.lab)}`), el("h1", "", esc(op.title))); wz.appendChild(head);
   const steps = el("div", "steps"); wz.appendChild(steps);
 
   /* step 3 only when it adds something: charts and kernels, or an extra line of code to run */
@@ -298,11 +316,12 @@ function open(op) {
   run3.addEventListener("click", () => { if (op.run3) op.run3(op.s); op.ran3 = ++EXEC; op.ran2 = op.ran2 || EXEC; update(op, true); });
   b3.insertBefore(card3, extras); card3.hidden = !op.run3;
   const nav = el("div", "nextrow");
-  if (i < OPS.length - 1) { const n = OPS[i + 1], a = el("a", "btn btn-primary", `Next: ${esc(n.title)} ${ICON.arrowR}`); a.href = "#" + n.id; nav.appendChild(a); }
-  if (i > 0) { const p = OPS[i - 1], a = el("a", "btn btn-ghost", `${ICON.arrowL} ${esc(p.title)}`); a.href = "#" + p.id; a.style.gap = "8px"; nav.appendChild(a); }
+  if (i > 0) { const p = OPS[i - 1], a = el("a", "btn btn-ghost nav-prev", `${ICON.arrowL} ${esc(p.title)}`); a.href = "#" + p.id; a.style.gap = "8px"; nav.appendChild(a); }
+  if (i < OPS.length - 1) { const n = OPS[i + 1], a = el("a", "btn btn-primary nav-next", `Next: ${esc(n.title)} ${ICON.arrowR}`); a.href = "#" + n.id; nav.appendChild(a); }
   const res = el("div", "result"); res.append(el("span", "eyebrow", "Output · shown in the image panel"), el("p", "", esc(op.look)));
   if (three) b3.appendChild(nav); else { res.appendChild(nav); b2.appendChild(res); }
   steps.append(s1, s2, s3);
+  wz.appendChild(buildDock(false));
 
   op.dom = { three, res, params: pc.wrap, params3: oc.wrap, code: pre, code3: pre3, lab3, card, tabs, reset: rb, reset3: rb3, st2, st3, ui: [...pc.ui, ...oc.ui], steps: [s1, s2, s3], icons: [i1, i2, i3], btns: [next1, next2] };
   op.v = buildStage(op);
@@ -338,6 +357,7 @@ function applyStep(op, animate) {
   const { steps, icons, btns } = op.dom;
   steps[1].hidden = op.step < 2; steps[2].hidden = op.step < 3 || !op.dom.three; op.dom.res.hidden = op.dom.three || op.step < 3;
   btns[0].hidden = op.step >= 2;
+  steps.forEach((s, k) => s.classList.toggle("tail", !s.hidden && !!steps[k + 1] && steps[k + 1].hidden));
   steps.forEach((s, k) => { const n = k + 1, done = n < op.step || (n === 3 && op.step >= 3); s.classList.toggle("complete", n < op.step); icons[k].innerHTML = done ? ICON.done : ICON.current; icons[k].setAttribute("aria-label", done ? "Complete" : "Current"); });
   op.v.panes[1] && op.v.panes[1].classList.toggle("pending", op.step < 3);
   $("stageHint").textContent = op.single ? "Input" : op.step >= 3 ? "Input and output" : "Input";
@@ -377,34 +397,54 @@ function update(op, now, editing) {
 }
 
 /* ---------- routing ---------- */
-function route() { const id = location.hash.slice(1); open(OPS.find(o => o.id === id) || OPS[0]); }
+function route() { const id = location.hash.slice(1), op = OPS.find(o => o.id === id); if (op) { open(op); if (!IMG_CHOSEN && !$("modal")) showChoice(); } else { if ($("modal")) closeModal(); openHome(); } }
 addEventListener("hashchange", route);
 
 /* ---------- image source ---------- */
 function setSource(img, name) {
   SRC = img; GRAY = toGray(img); SVD = null;
   $("srcName").textContent = name + " · 256 × 256"; $("srcName2").textContent = name;
-  if (cur) update(cur, true);
+  if (cur) update(cur, true); else if (document.body.classList.contains("landing") && openHome.refresh) openHome.refresh();
 }
 function onFile(e) {
   const f = e.target.files[0]; if (!f) return;
   const url = URL.createObjectURL(f), im = new Image();
+  const first = !IMG_CHOSEN;
   im.onload = () => {
     const c = document.createElement("canvas"); c.width = c.height = N; const x = c.getContext("2d"), m = Math.min(im.width, im.height);
-    x.drawImage(im, (im.width - m) / 2, (im.height - m) / 2, m, m, 0, 0, N, N); URL.revokeObjectURL(url);
-    setSource(fromID(x.getImageData(0, 0, N, N)), f.name.length > 28 ? f.name.slice(0, 25) + "…" : f.name);
+    x.drawImage(im, (im.width - m) / 2, (im.height - m) / 2, m, m, 0, 0, N, N);
+    const name = f.name.length > 28 ? f.name.slice(0, 25) + "…" : f.name;
+    setSource(fromID(x.getImageData(0, 0, N, N)), name);
+    showReady({ name, w: im.naturalWidth, h: im.naturalHeight, im, first });
+    URL.revokeObjectURL(url);
   };
-  im.onerror = () => { $("srcName").textContent = "That file could not be read as an image. Try a PNG or JPEG."; };
+  im.onerror = () => { const msg = "That file could not be read as an image. Try a PNG or JPEG."; $("srcName").textContent = msg; const p = document.querySelector("#modal .modal-p"); if (p) { p.textContent = msg; p.classList.add("err"); } };
   im.src = url; e.target.value = "";
 }
-$("file").addEventListener("change", onFile); $("file2").addEventListener("change", onFile);
-document.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => { setSource(makeSample(), "Sample city scene"); setMenu(false); }));
+$("file").addEventListener("change", onFile); $("file2").addEventListener("change", onFile); $("fileM").addEventListener("change", onFile);
+document.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => { setSource(SAMPLE, "Sample city scene"); setMenu(false); }));
 
 const redraw = () => { paintThemeBtn(); if (cur) update(cur, true); };
 sysDark.addEventListener("change", redraw);
 new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(redraw, 150); });
 
+/* ---------- preloader: logo and a bar that counts to 100 ---------- */
+let LOADED = false; const onLoaded = [];
+function whenLoaded(fn) { if (LOADED) fn(); else onLoaded.push(fn); }
+{
+  const pre = $("preload"), num = $("plNum"), bar = $("plBar"), t0 = performance.now(), MIN = reduceMotion ? 0 : 1400;
+  let ready = false, shown = 0;
+  Promise.race([document.fonts ? document.fonts.ready : Promise.resolve(), new Promise(r => setTimeout(r, 3000))]).then(() => { ready = true; });
+  const finish = () => { pre.classList.add("done"); LOADED = true; setTimeout(() => pre.remove(), 500); onLoaded.splice(0).forEach(f => f()); };
+  const tick = now => {
+    const k = MIN ? Math.min(1, (now - t0) / MIN) : 1, target = ready ? 100 * (1 - Math.pow(1 - k, 3)) : Math.min(90, 100 * (1 - Math.pow(1 - k, 3)));
+    shown = Math.max(shown, Math.round(target));
+    num.textContent = shown; bar.style.width = shown + "%"; pre.setAttribute("aria-valuenow", shown);
+    if (shown >= 100) setTimeout(finish, reduceMotion ? 0 : 180); else requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
 paintThemeBtn();
-SRC = makeSample(); GRAY = toGray(SRC);
+const SAMPLE = makeSample(); SRC = SAMPLE; GRAY = toGray(SRC);
 route();

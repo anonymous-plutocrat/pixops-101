@@ -8,12 +8,14 @@ Writes:
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-JS_ORDER = ["helpers.js", "ops.js", "overrides.js", "app.js"]
+JS_ORDER = ["helpers.js", "ops.js", "overrides.js", "home.js", "app.js"]
 
 def build():
     shell = (ROOT / "src" / "shell.html").read_text()
     js = "\n".join((ROOT / "src" / "js" / name).read_text() for name in JS_ORDER)
-    body = shell.replace("/*JS*/", js)
+    import base64
+    hero = "data:image/jpeg;base64," + base64.b64encode((ROOT / "src" / "assets" / "hero.jpg").read_bytes()).decode()
+    body = shell.replace("/*JS*/", js).replace("__HERO__", hero)
     (ROOT / "dist").mkdir(exist_ok=True)
     (ROOT / "dist" / "artifact.html").write_text(body)
     page = ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
