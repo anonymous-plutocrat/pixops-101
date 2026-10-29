@@ -1,0 +1,1642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+</head>
+<body style="margin:0">
+<title>Pixel Ops</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Carbon v11 shell: 48px header, 256px side nav of operations, a wizard column with a vertical
+   progress indicator (operation → code → output), and a sticky image panel on the right.
+   Tokens follow Carbon's White theme (light) and Gray 100 theme (dark). */
+:root{
+  --cds-background:#ffffff; --cds-layer-01:#f4f4f4; --cds-layer-02:#ffffff; --cds-layer-accent:#e0e0e0;
+  --cds-layer-hover:#e8e8e8; --cds-layer-selected:#e0e0e0; --cds-field:#f4f4f4;
+  --cds-border-subtle:#e0e0e0; --cds-border-subtle-strong:#c6c6c6; --cds-border-strong:#8d8d8d; --cds-border-inverse:#161616;
+  --cds-text-primary:#161616; --cds-text-secondary:#525252; --cds-text-helper:#6f6f6f; --cds-text-placeholder:#a8a8a8;
+  --cds-text-on-color:#ffffff; --cds-text-inverse:#ffffff; --cds-layer-selected-inverse:#161616;
+  --cds-interactive:#0f62fe; --cds-link:#0f62fe; --cds-focus:#0f62fe; --cds-icon-primary:#161616; --cds-icon-secondary:#525252;
+  --cds-button-primary:#0f62fe; --cds-button-primary-hover:#0050e6; --cds-button-primary-active:#002d9c;
+  --cds-button-secondary:#393939; --cds-button-secondary-hover:#474747;
+  --cds-highlight:#d0e2ff; --cds-tag-bg:#edf5ff; --cds-tag-fg:#0043ce; --cds-tag-hl-bg:#d0e2ff; --cds-tag-hl-fg:#002d9c; --cds-tag-radius:2px;
+  --cds-tag-shadow:inset 0 0 0 1px #a6c8ff; --cds-tag-hl-shadow:inset 0 0 0 1px #4589ff;
+  --cds-info-bg:#edf5ff; --cds-info-border:#0043ce;
+  --cds-tip-bg:#393939; --cds-tip-fg:#ffffff; --cds-tip-muted:#c6c6c6; --cds-tip-err:#ff8389;
+  --cds-error:#da1e28; --cds-error-bg:#fff1f1;
+  --cds-shell:#161616; --cds-shell-fg:#f4f4f4; --cds-shell-hover:#2c2c2c; --cds-shell-border:#393939;
+  --cds-overlay:rgba(22,22,22,.5);
+  --ch-r:#da1e28; --ch-g:#198038; --ch-b:#0f62fe;
+  --sans:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --hdr:48px;
+  /* aliases used by the shared chart code */
+  --fg:var(--cds-text-primary); --bg:var(--cds-background); --muted:var(--cds-text-secondary); --faint:var(--cds-border-subtle-strong);
+  --line:var(--cds-border-subtle); --frame:var(--cds-layer-01);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --cds-background:#161616; --cds-layer-01:#262626; --cds-layer-02:#393939; --cds-layer-accent:#393939;
+    --cds-layer-hover:#333333; --cds-layer-selected:#393939; --cds-field:#262626;
+    --cds-border-subtle:#393939; --cds-border-subtle-strong:#525252; --cds-border-strong:#6f6f6f; --cds-border-inverse:#f4f4f4;
+    --cds-text-primary:#f4f4f4; --cds-text-secondary:#c6c6c6; --cds-text-helper:#a8a8a8; --cds-text-placeholder:#6f6f6f;
+    --cds-text-inverse:#161616; --cds-layer-selected-inverse:#f4f4f4;
+    --cds-interactive:#4589ff; --cds-link:#78a9ff; --cds-focus:#ffffff; --cds-icon-primary:#f4f4f4; --cds-icon-secondary:#c6c6c6;
+    --cds-button-secondary:#6f6f6f; --cds-button-secondary-hover:#5e5e5e;
+    --cds-highlight:#002d9c; --cds-tag-bg:#393939; --cds-tag-fg:#f4f4f4; --cds-tag-hl-bg:#474747; --cds-tag-hl-fg:#f4f4f4; --cds-tag-radius:0;
+    --cds-tag-shadow:inset 0 -1px 0 #6f6f6f; --cds-tag-hl-shadow:inset 0 -1px 0 #8d8d8d;
+    --cds-info-bg:#262626; --cds-info-border:#4589ff;
+    --cds-tip-bg:#f4f4f4; --cds-tip-fg:#161616; --cds-tip-muted:#525252; --cds-tip-err:#da1e28;
+    --cds-error:#fa4d56; --cds-error-bg:#2d0709;
+    --cds-overlay:rgba(0,0,0,.65);
+    --ch-r:#fa4d56; --ch-g:#42be65; --ch-b:#4589ff;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --cds-background:#161616; --cds-layer-01:#262626; --cds-layer-02:#393939; --cds-layer-accent:#393939;
+  --cds-layer-hover:#333333; --cds-layer-selected:#393939; --cds-field:#262626;
+  --cds-border-subtle:#393939; --cds-border-subtle-strong:#525252; --cds-border-strong:#6f6f6f; --cds-border-inverse:#f4f4f4;
+  --cds-text-primary:#f4f4f4; --cds-text-secondary:#c6c6c6; --cds-text-helper:#a8a8a8; --cds-text-placeholder:#6f6f6f;
+  --cds-text-inverse:#161616; --cds-layer-selected-inverse:#f4f4f4;
+  --cds-interactive:#4589ff; --cds-link:#78a9ff; --cds-focus:#ffffff; --cds-icon-primary:#f4f4f4; --cds-icon-secondary:#c6c6c6;
+  --cds-button-secondary:#6f6f6f; --cds-button-secondary-hover:#5e5e5e;
+  --cds-highlight:#002d9c; --cds-tag-bg:#393939; --cds-tag-fg:#f4f4f4; --cds-tag-hl-bg:#474747; --cds-tag-hl-fg:#f4f4f4; --cds-tag-radius:0;
+    --cds-tag-shadow:inset 0 -1px 0 #6f6f6f; --cds-tag-hl-shadow:inset 0 -1px 0 #8d8d8d;
+  --cds-info-bg:#262626; --cds-info-border:#4589ff;
+    --cds-tip-bg:#f4f4f4; --cds-tip-fg:#161616; --cds-tip-muted:#525252; --cds-tip-err:#da1e28;
+    --cds-error:#fa4d56; --cds-error-bg:#2d0709;
+  --cds-overlay:rgba(0,0,0,.65);
+  --ch-r:#fa4d56; --ch-g:#42be65; --ch-b:#4589ff;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--cds-background);color:var(--cds-text-primary);font:400 14px/1.43 var(--sans);letter-spacing:.16px;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--cds-shell)}
+h1,h2,h3{margin:0;font-family:var(--sans);text-wrap:balance}
+p{margin:0}
+button,select{font:inherit;color:inherit;letter-spacing:inherit}
+:focus-visible{outline:2px solid var(--cds-focus);outline-offset:-2px}
+[hidden]{display:none!important}
+svg.i{width:16px;height:16px;fill:currentColor;flex:none}
+
+/* ---------- UI shell header ---------- */
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;height:var(--hdr);background:var(--cds-shell);color:var(--cds-shell-fg);display:flex;align-items:stretch;border-bottom:1px solid var(--cds-shell-border);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+.hdr-btn{width:48px;border:0;background:transparent;color:inherit;display:grid;place-items:center;cursor:pointer}
+.hdr-btn:hover{background:var(--cds-shell-hover)}
+.hdr-btn:focus-visible{outline:2px solid #ffffff;outline-offset:-2px}
+.hdr-btn svg.i{width:20px;height:20px}
+#menuBtn{display:none}
+.hdr-name{display:flex;align-items:center;gap:6px;padding:0 32px 0 16px;color:inherit;text-decoration:none;font:600 14px/18px var(--sans);white-space:nowrap}
+.hdr-name span{font-weight:400}
+.hdr-name:focus-visible{outline:2px solid #ffffff;outline-offset:-2px}
+.hdr-crumb{display:flex;align-items:center;font:400 14px/18px var(--sans);color:#c6c6c6;border-left:1px solid var(--cds-shell-border);padding:0 16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.hdr-spacer{flex:1}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:256px minmax(0,1fr) minmax(320px,400px);align-items:start}
+
+/* side nav */
+.nav{position:sticky;top:calc(var(--hdr) + env(safe-area-inset-top,0px));height:calc(100dvh - var(--hdr) - env(safe-area-inset-top,0px));overflow-y:auto;background:var(--cds-layer-01);border-right:1px solid var(--cds-border-subtle);padding:16px 0 32px;padding-left:env(safe-area-inset-left,0px)}
+.nav-group + .nav-group{margin-top:16px}
+.nav-cat{padding:0 16px 4px}
+.nav-cat h2{font:600 14px/18px var(--sans);color:var(--cds-text-primary)}
+.nav-cat span{display:block;font:400 12px/16px var(--sans);letter-spacing:.32px;color:var(--cds-text-helper)}
+.nav ol{list-style:none;margin:4px 0 0;padding:0}
+.nav a{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px;padding:7px 16px 7px 32px;color:var(--cds-text-secondary);text-decoration:none;font:600 14px/18px var(--sans)}
+.nav a:hover{background:var(--cds-layer-hover);color:var(--cds-text-primary)}
+.nav a.on{background:var(--cds-layer-selected);color:var(--cds-text-primary)}
+.nav a.on::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cds-interactive)}
+.nav a .chk{opacity:0;color:var(--cds-interactive)}
+.nav a.done .chk{opacity:1}
+.nav .sheet-src{display:none}
+.overlay{display:none}
+
+/* wizard */
+.wizard{min-width:0;padding:32px 40px 72vh}
+.wz-head{display:flex;flex-direction:column;gap:8px;margin-bottom:32px;max-width:720px}
+.eyebrow{font:400 12px/16px var(--sans);letter-spacing:.32px;color:var(--cds-text-secondary)}
+.wz-head h1{font:400 32px/40px var(--sans);letter-spacing:0}
+
+/* vertical progress indicator */
+.steps{display:flex;flex-direction:column;max-width:760px}
+.step{display:grid;grid-template-columns:24px minmax(0,1fr);gap:16px;position:relative;padding-bottom:40px;scroll-margin-top:calc(var(--hdr) + 24px)}
+.step::before{content:"";position:absolute;left:11px;top:28px;bottom:4px;width:1px;background:var(--cds-border-subtle-strong)}
+.step.complete::before{background:var(--cds-interactive)}
+.step:last-child::before{display:none}
+.step-ic{width:24px;height:24px;display:grid;place-items:center;color:var(--cds-interactive);padding-top:2px}
+.step-ic svg{width:20px;height:20px;fill:currentColor}
+.step-body{display:flex;flex-direction:column;gap:16px;min-width:0}
+.step-label{display:flex;flex-direction:column;gap:2px}
+.step-label h2{font:400 20px/28px var(--sans);letter-spacing:0}
+.step-body > p{font:400 16px/24px var(--sans);letter-spacing:0;color:var(--cds-text-primary);max-width:66ch}
+.step-body > p.helper{font:400 14px/20px var(--sans);letter-spacing:.16px;color:var(--cds-text-secondary)}
+.step.enter{animation:enter .24s cubic-bezier(0,0,.38,.9) both}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:space-between;gap:32px;min-height:48px;padding:13px 16px 13px 16px;border:1px solid transparent;border-radius:0;font:400 14px/18px var(--sans);letter-spacing:.16px;text-decoration:none;cursor:pointer;text-align:left;max-width:100%}
+.btn svg.i{margin-left:auto}
+.btn-primary{background:var(--cds-button-primary);color:#ffffff}
+.btn-primary:hover{background:var(--cds-button-primary-hover)}
+.btn-primary:active{background:var(--cds-button-primary-active)}
+.btn-secondary{background:var(--cds-button-secondary);color:#ffffff}
+.btn-secondary:hover{background:var(--cds-button-secondary-hover)}
+.btn-ghost{background:transparent;color:var(--cds-link);padding-right:16px}
+.btn-ghost:hover{background:var(--cds-layer-hover)}
+.btn-sm{min-height:32px;padding:6px 12px;gap:16px}
+.btn:focus-visible{outline:2px solid var(--cds-focus);outline-offset:-2px;box-shadow:inset 0 0 0 3px var(--cds-background)}
+.actions{display:flex;flex-wrap:wrap;gap:1px}
+
+/* code snippet with contained tabs */
+.snippet{background:var(--cds-layer-01);min-width:0}
+.tabs{display:flex;align-items:stretch;background:var(--cds-layer-accent);overflow-x:auto}
+.tab{position:relative;display:flex;align-items:center;min-width:128px;height:48px;padding:0 16px;border:0;background:var(--cds-layer-accent);color:var(--cds-text-secondary);text-align:left;cursor:pointer;font:400 14px/18px var(--sans);border-right:1px solid var(--cds-border-strong)}
+.tab:last-child{border-right:0}
+.tab:hover{background:var(--cds-layer-hover);color:var(--cds-text-primary)}
+.tab[aria-selected="true"]{background:var(--cds-layer-01);color:var(--cds-text-primary);font-weight:600;border-right-color:transparent}
+.tab[aria-selected="true"]::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--cds-interactive)}
+.tab.static{cursor:default}
+.tab.static:hover{background:var(--cds-layer-01)}
+.tabs-note{margin-left:auto;align-self:center;padding:0 16px;font:400 12px/16px var(--sans);letter-spacing:.32px;color:var(--cds-text-secondary);white-space:nowrap}
+.code{margin:0;padding:16px;color:var(--cds-text-primary);font:400 14px/24px var(--mono);letter-spacing:.32px;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:4}
+.code .tk{cursor:help;border-bottom:1px dotted var(--cds-border-strong)}
+.code .tk:hover,.code .tk.hl{background:var(--cds-highlight);border-bottom:1px solid var(--cds-interactive)}
+.code .pm{background:var(--cds-tag-bg);color:var(--cds-tag-fg);border-radius:2px;padding:1px 6px;margin:0 1px;font-weight:600;cursor:pointer}
+.code .pm{box-shadow:var(--cds-tag-shadow);border-radius:var(--cds-tag-radius)}
+.code .pm:hover,.code .pm.hl{background:var(--cds-tag-hl-bg);color:var(--cds-tag-hl-fg);box-shadow:var(--cds-tag-hl-shadow)}
+.code .cm{color:var(--cds-text-helper)}
+.code .cm.tk{color:var(--cds-text-helper)}
+.code .tk:focus-visible,.code .pm:focus-visible{outline:2px solid var(--cds-focus);outline-offset:1px}
+
+
+/* editable values inside the code */
+.code .pm{display:inline-flex;align-items:baseline;position:relative;padding:0;cursor:text}
+.code .pm-in,.code .pm-sel{font:600 14px/22px var(--mono);letter-spacing:.32px;color:inherit;background:transparent;border:0;padding:0 6px;margin:0;min-width:2ch;border-radius:var(--cds-tag-radius);outline:none}
+.code .pm-in{cursor:text;caret-color:currentColor}
+.code .pm-sel{-webkit-appearance:none;appearance:none;padding-right:20px;cursor:pointer}
+.code .pm-sel option{background:var(--cds-layer-01);color:var(--cds-text-primary)}
+.code .pm .chev{position:absolute;right:3px;top:50%;transform:translateY(-50%);width:14px;height:14px;pointer-events:none}
+.code .pm:focus-within{background:var(--cds-layer-02);color:var(--cds-text-primary);box-shadow:inset 0 0 0 2px var(--cds-focus)}
+.code .pm.bad,.code .pm.bad:focus-within{background:var(--cds-error-bg);color:var(--cds-error);box-shadow:inset 0 0 0 2px var(--cds-error)}
+.code .pm.ro{padding:0 6px;cursor:help}
+.code .pm.ro:hover,.code .pm.ro:focus-visible{background:var(--cds-tag-hl-bg);color:var(--cds-tag-hl-fg)}
+/* output note for two-step pages */
+.result{display:flex;flex-direction:column;gap:8px;padding:16px 16px 16px 13px;border-left:3px solid var(--cds-interactive);background:var(--cds-layer-01);scroll-margin-top:calc(var(--hdr) + 24px)}
+.result > p{font:400 16px/24px var(--sans);letter-spacing:0;max-width:66ch}
+.result .nextrow{border-top:0;margin-top:8px;padding-top:0}
+/* notebook-style cell footer */
+.cell-foot{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:0 16px 16px}
+.cell-foot .btn{min-height:40px;padding:10px 16px;gap:24px}
+.cell-status{font:400 12px/16px var(--mono);letter-spacing:.32px;color:var(--cds-text-secondary)}
+/* reset icon button in the tab bar */
+.tbtn{flex:none;width:48px;height:48px;border:0;background:transparent;color:var(--cds-icon-primary);display:grid;place-items:center;cursor:pointer}
+.tbtn:hover:not(:disabled){background:var(--cds-layer-hover)}
+.tbtn:disabled{color:var(--cds-text-placeholder);cursor:not-allowed}
+.tbtn svg.i{width:16px;height:16px}
+/* Carbon tooltip */
+.tip{position:fixed;z-index:80;max-width:min(288px, calc(100vw - 16px));display:flex;flex-direction:column;gap:4px;padding:8px 16px;background:var(--cds-tip-bg);color:var(--cds-tip-fg);border-radius:2px;box-shadow:0 2px 6px rgba(0,0,0,.3);font:400 14px/18px var(--sans);letter-spacing:.16px;pointer-events:none}
+.tip .k{font:600 13px/18px var(--mono);overflow-wrap:anywhere}
+.tip .note{color:var(--cds-tip-muted);font-size:12px;line-height:16px;letter-spacing:.32px}
+.tip .err{color:var(--cds-tip-err);font-size:12px;line-height:16px;letter-spacing:.32px}
+.tip .caret{position:absolute;left:var(--cx,50%);bottom:-5px;width:10px;height:10px;margin-left:-5px;background:var(--cds-tip-bg);transform:rotate(45deg)}
+.tip.below .caret{bottom:auto;top:-5px}
+@media (prefers-reduced-motion:no-preference){.tip{animation:tipin .11s cubic-bezier(0,0,.38,.9)}@keyframes tipin{from{opacity:0}to{opacity:1}}}
+
+/* explanation: low-contrast inline notification */
+.explain{display:flex;gap:12px;align-items:flex-start;background:var(--cds-info-bg);border-left:3px solid var(--cds-info-border);padding:14px 16px 14px 13px;min-height:64px;margin:0 16px 16px}
+.explain svg.i{color:var(--cds-info-border);margin-top:2px}
+.explain .txt{display:flex;flex-direction:column;gap:4px;min-width:0}
+.explain .k{font:600 14px/20px var(--mono);color:var(--cds-text-primary);overflow-wrap:anywhere}
+.explain .v{font:400 14px/20px var(--sans);color:var(--cds-text-primary)}
+.explain .v em{font-style:normal;color:var(--cds-text-secondary)}
+
+/* parameters */
+.params{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px 32px;padding:16px;border-top:1px solid var(--cds-border-subtle)}
+.params:empty{display:none}
+.params.bare{padding:0;border-top:0}
+.ctl{display:flex;flex-direction:column;gap:8px;min-width:0;padding:4px;margin:-4px;transition:background .11s}
+.ctl.hl{background:var(--cds-layer-hover);box-shadow:inset 3px 0 0 var(--cds-interactive)}
+.ctl.wide{grid-column:1/-1}
+.lbl{font:400 12px/16px var(--sans);letter-spacing:.32px;color:var(--cds-text-secondary)}
+.lbl code{font:600 12px/16px var(--mono);color:var(--cds-text-primary)}
+/* slider */
+.slider{display:flex;align-items:center;gap:12px}
+.slider .mm{font:400 14px/18px var(--sans);color:var(--cds-text-primary);font-variant-numeric:tabular-nums;flex:none}
+.slider input[type=range]{flex:1;min-width:0}
+.slider output{flex:none;min-width:64px;height:40px;padding:0 12px;display:flex;align-items:center;background:var(--cds-field);border-bottom:1px solid var(--cds-border-strong);font:400 14px/18px var(--mono);font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:transparent;cursor:pointer;margin:0;--p:50%}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(to right,var(--cds-border-inverse) var(--p),var(--cds-border-subtle-strong) var(--p))}
+input[type=range]::-moz-range-track{height:2px;background:var(--cds-border-subtle-strong)}
+input[type=range]::-moz-range-progress{height:2px;background:var(--cds-border-inverse)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--cds-layer-selected-inverse);margin-top:-6px;transition:transform .11s}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:var(--cds-layer-selected-inverse)}
+input[type=range]:hover::-webkit-slider-thumb,input[type=range]:focus-visible::-webkit-slider-thumb{transform:scale(1.43)}
+input[type=range]:focus-visible{outline:none}
+input[type=range]:focus-visible::-webkit-slider-thumb{background:var(--cds-interactive);box-shadow:0 0 0 2px var(--cds-background), 0 0 0 4px var(--cds-focus)}
+input[type=range]:disabled{opacity:.4;cursor:not-allowed}
+/* content switcher */
+.switcher{display:inline-flex;flex-wrap:wrap;max-width:100%}
+.switcher button{height:40px;padding:0 16px;border:1px solid var(--cds-border-inverse);background:transparent;color:var(--cds-text-secondary);cursor:pointer;font:400 14px/18px var(--sans);white-space:nowrap;margin-left:-1px}
+.switcher button:first-child{margin-left:0;border-radius:4px 0 0 4px}
+.switcher button:last-child{border-radius:0 4px 4px 0}
+.switcher button:hover{background:var(--cds-layer-hover);color:var(--cds-text-primary)}
+.switcher button[aria-pressed="true"]{background:var(--cds-layer-selected-inverse);color:var(--cds-text-inverse)}
+/* select */
+.select{position:relative;max-width:360px}
+.select select{-webkit-appearance:none;appearance:none;width:100%;height:40px;padding:0 48px 0 16px;border:0;border-bottom:1px solid var(--cds-border-strong);background:var(--cds-field);color:var(--cds-text-primary);cursor:pointer;font:400 14px/18px var(--mono)}
+.select svg.i{position:absolute;right:16px;top:12px;pointer-events:none}
+
+/* output */
+.extras{display:flex;flex-wrap:wrap;gap:24px}
+.extras:empty{display:none}
+.extra{display:flex;flex-direction:column;gap:8px;min-width:0}
+.extra.grow{flex:1 1 280px}
+.extra canvas{display:block;width:100%}
+.extra canvas.sq{width:120px;height:120px}
+.kgrids{display:flex;gap:24px;flex-wrap:wrap}
+.kgrid{display:grid;gap:2px;font:400 12px/1 var(--mono);font-variant-numeric:tabular-nums}
+.kgrid div{display:grid;place-items:center;min-width:32px;height:28px;padding:0 3px}
+.kgrid.tiny div{min-width:12px;height:12px;padding:0}
+.matrix{display:grid;grid-template-columns:repeat(3,auto);gap:4px 16px;font:400 14px/20px var(--mono);font-variant-numeric:tabular-nums;padding:4px 12px;border-left:2px solid var(--cds-text-primary);border-right:2px solid var(--cds-text-primary);justify-items:end;width:max-content}
+.stat{font:400 20px/28px var(--sans)}
+.stat small{display:block;font-size:12px;line-height:16px;letter-spacing:.32px;color:var(--cds-text-secondary)}
+.hint{font:400 14px/20px var(--sans);color:var(--cds-text-secondary)}
+.nextrow{display:flex;flex-wrap:wrap;gap:1px;padding-top:24px;margin-top:8px;border-top:1px solid var(--cds-border-subtle)}
+
+/* image panel */
+.stage{position:sticky;top:calc(var(--hdr) + env(safe-area-inset-top,0px));height:calc(100dvh - var(--hdr) - env(safe-area-inset-top,0px));overflow-y:auto;background:var(--cds-layer-01);border-left:1px solid var(--cds-border-subtle);padding:16px max(16px, env(safe-area-inset-right,0px)) 16px 16px;display:flex;flex-direction:column;gap:16px}
+.stage-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.stage-head h2{font:600 14px/18px var(--sans)}
+.frames{display:flex;flex-direction:column;gap:16px;align-items:center}
+.pane{margin:0;display:flex;flex-direction:column;gap:8px;width:min(100%, calc((100dvh - var(--hdr) - 250px) / 2));min-width:160px}
+.frame{position:relative;aspect-ratio:1;background:var(--cds-layer-02);overflow:hidden;display:grid;place-items:center;touch-action:none;outline:1px solid var(--cds-border-subtle);outline-offset:-1px}
+.frame.tl{place-items:start}
+.frame canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.frame.drag{cursor:crosshair}
+.wait{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:16px;font:400 12px/16px var(--sans);letter-spacing:.32px;color:var(--cds-text-secondary);background:var(--cds-layer-02)}
+.pane.pending canvas{visibility:hidden}
+.pane:not(.pending) .wait{display:none}
+.cap{display:flex;justify-content:space-between;gap:8px;font:400 12px/16px var(--sans);letter-spacing:.32px;color:var(--cds-text-secondary)}
+.cap .d{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.readout{font:400 12px/16px var(--mono);letter-spacing:.32px;font-variant-numeric:tabular-nums;color:var(--cds-text-secondary);min-height:40px;white-space:pre-wrap;border-top:1px solid var(--cds-border-subtle);padding-top:12px}
+.src{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--cds-border-subtle);padding-top:12px;margin-top:auto}
+.src .nm{font:400 12px/16px var(--sans);letter-spacing:.32px;color:var(--cds-text-secondary)}
+.src .actions{gap:1px}
+.fileInput{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+
+/* ---------- responsive (Carbon lg 1056, md 672) ---------- */
+@media (max-width:1056px){
+  .app{grid-template-columns:minmax(0,1fr) minmax(280px,340px)}
+  #menuBtn{display:grid}
+  .hdr-name{padding-left:0}
+  .nav{position:fixed;z-index:45;top:calc(var(--hdr) + env(safe-area-inset-top,0px));left:0;bottom:0;height:auto;width:min(256px, 86vw);transform:translateX(-101%);transition:transform .24s cubic-bezier(.2,0,.38,.9);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+  .nav.open{transform:none}
+  .overlay{position:fixed;inset:0;z-index:40;background:var(--cds-overlay)}
+  .overlay.open{display:block}
+  .wizard{padding:32px 32px 72vh}
+}
+@media (max-width:672px){
+  .hdr-crumb{display:none}
+  .app{grid-template-columns:minmax(0,1fr)}
+  .stage{order:-1;position:sticky;z-index:30;height:auto;overflow:visible;border-left:0;border-bottom:1px solid var(--cds-border-subtle);padding:8px max(16px, env(safe-area-inset-right,0px)) 8px max(16px, env(safe-area-inset-left,0px));gap:8px}
+  .stage-head,.stage .src,.readout{display:none}
+  .frames{flex-direction:row;align-items:start;gap:8px}
+  .pane{width:auto;flex:1 1 0;min-width:0}
+  .frames.single .pane{flex:0 1 50%}
+  .wait{font-size:11px;padding:8px}
+  .nav .sheet-src{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--cds-border-subtle);margin-top:24px;padding:16px 16px 0}
+  .wizard{padding:24px max(16px, env(safe-area-inset-right,0px)) 72vh max(16px, env(safe-area-inset-left,0px))}
+  .wz-head h1{font-size:28px;line-height:36px}
+  .step{gap:12px}
+  .tab{min-width:0;flex:1}
+  .tabs-note{display:none}
+  .explain{margin:0 12px 12px}
+  .params{grid-template-columns:minmax(0,1fr)}
+  .switcher button{padding:0 12px}
+}
+@media (prefers-reduced-motion:reduce){.step.enter{animation:none}.nav{transition:none}}
+</style>
+
+<header class="hdr">
+  <button class="hdr-btn" id="menuBtn" type="button" aria-label="Open the operations menu" aria-controls="nav" aria-expanded="false"><svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 4h16v1.5H2zM2 9.25h16v1.5H2zM2 14.5h16V16H2z"/></svg></button>
+  <a class="hdr-name" href="#grayscale">Pixel <span>Ops</span></a>
+  <span class="hdr-crumb" id="crumb"></span>
+  <span class="hdr-spacer"></span>
+  <button class="hdr-btn" id="pageReset" type="button" aria-label="Start this page over"></button>
+  <button class="hdr-btn" id="themeBtn" type="button" aria-label="Switch theme"></button>
+</header>
+
+<div class="app">
+  <nav class="nav" id="nav" aria-label="Operations">
+    <div id="navList"></div>
+    <div class="sheet-src">
+      <span class="lbl" id="srcName2">Sample city scene</span>
+      <div class="actions">
+        <label class="btn btn-secondary btn-sm" for="file2">Upload an image</label>
+        <input class="fileInput" type="file" id="file2" accept="image/*">
+        <button class="btn btn-ghost btn-sm" type="button" data-sample>Use the sample</button>
+      </div>
+    </div>
+  </nav>
+  <div class="overlay" id="overlay"></div>
+
+  <main class="wizard" id="wizard"></main>
+
+  <aside class="stage" id="stage" aria-label="Image">
+    <div class="stage-head"><h2>Image</h2><span class="lbl" id="stageHint"></span></div>
+    <div class="frames" id="frames"></div>
+    <div class="readout" id="readout"></div>
+    <div class="src">
+      <span class="nm" id="srcName">Sample city scene · 256 × 256</span>
+      <div class="actions">
+        <label class="btn btn-secondary btn-sm" for="file">Upload an image</label>
+        <input class="fileInput" type="file" id="file" accept="image/*">
+        <button class="btn btn-ghost btn-sm" type="button" data-sample>Use the sample</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<script>
+"use strict";
+/* ================= image helpers ================= */
+const N = 256;
+const mk = (w, h, c) => ({ w, h, c, d: new Uint8ClampedArray(w * h * c) });
+function rng(seed) { return () => { seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function gaussR(r) { let u = 0; while (u === 0) u = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * r()); }
+function fromID(id) { const o = mk(id.width, id.height, 3); for (let i = 0, j = 0; i < id.data.length; i += 4, j += 3) { o.d[j] = id.data[i]; o.d[j + 1] = id.data[i + 1]; o.d[j + 2] = id.data[i + 2]; } return o; }
+function toID(img) {
+  const id = new ImageData(img.w, img.h), s = img.d, t = id.data;
+  for (let p = 0, n = img.w * img.h; p < n; p++) { const i = p * 4; if (img.c === 1) { t[i] = t[i + 1] = t[i + 2] = s[p]; } else { const j = p * 3; t[i] = s[j]; t[i + 1] = s[j + 1]; t[i + 2] = s[j + 2]; } t[i + 3] = 255; }
+  return id;
+}
+function toGray(img, avg) {
+  if (img.c === 1) return img;
+  const o = mk(img.w, img.h, 1), s = img.d;
+  for (let p = 0, n = img.w * img.h; p < n; p++) { const j = p * 3; o.d[p] = avg ? (s[j] + s[j + 1] + s[j + 2]) / 3 : 0.299 * s[j] + 0.587 * s[j + 1] + 0.114 * s[j + 2]; }
+  return o;
+}
+function clone(img) { return { w: img.w, h: img.h, c: img.c, d: new Uint8ClampedArray(img.d) }; }
+function applyLut(img, lut) { const o = mk(img.w, img.h, img.c); for (let i = 0; i < img.d.length; i++) o.d[i] = lut[img.d[i]]; return o; }
+function makeLut(f) { const l = new Uint8ClampedArray(256); for (let r = 0; r < 256; r++) l[r] = f(r); return l; }
+function hist(img, ch) { const h = new Uint32Array(256), c = img.c; for (let i = ch || 0; i < img.d.length; i += c) h[img.d[i]]++; return h; }
+const refl = (i, n) => { while (i < 0 || i >= n) { if (i < 0) i = -i; if (i >= n) i = 2 * n - 2 - i; } return i; };
+const clampI = (i, n) => i < 0 ? 0 : i >= n ? n - 1 : i;
+
+function conv(img, k, kw, kh) {
+  const { w, h, c } = img, out = new Float32Array(w * h * c), ax = kw >> 1, ay = kh >> 1, d = img.d;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) for (let ch = 0; ch < c; ch++) {
+    let s = 0, ki = 0;
+    for (let j = 0; j < kh; j++) { const row = refl(y + j - ay, h) * w; for (let i = 0; i < kw; i++, ki++) s += k[ki] * d[(row + refl(x + i - ax, w)) * c + ch]; }
+    out[(y * w + x) * c + ch] = s;
+  }
+  return out;
+}
+function convSep(img, k) {
+  const { w, h, c } = img, a = k.length >> 1, tmp = new Float32Array(w * h * c), out = new Float32Array(w * h * c), d = img.d;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) for (let ch = 0; ch < c; ch++) { let s = 0; for (let i = 0; i < k.length; i++) s += k[i] * d[(y * w + refl(x + i - a, w)) * c + ch]; tmp[(y * w + x) * c + ch] = s; }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) for (let ch = 0; ch < c; ch++) { let s = 0; for (let i = 0; i < k.length; i++) s += k[i] * tmp[(refl(y + i - a, h) * w + x) * c + ch]; out[(y * w + x) * c + ch] = s; }
+  return out;
+}
+function fromF(img, f) { const o = mk(img.w, img.h, img.c); for (let i = 0; i < f.length; i++) o.d[i] = Math.round(f[i]); return o; }
+function gaussKernel(k, sigma) {
+  if (sigma <= 0) sigma = 0.3 * ((k - 1) * 0.5 - 1) + 0.8;
+  const g = new Float64Array(k), m = (k - 1) / 2; let s = 0;
+  for (let i = 0; i < k; i++) { g[i] = Math.exp(-((i - m) ** 2) / (2 * sigma * sigma)); s += g[i]; }
+  for (let i = 0; i < k; i++) g[i] /= s;
+  return g;
+}
+function addNoise(img, sigma, seed) { const r = rng(seed), o = mk(img.w, img.h, img.c); for (let i = 0; i < img.d.length; i++) o.d[i] = img.d[i] + gaussR(r) * sigma; return o; }
+function saltPepper(img, amount, seed) { const r = rng(seed), o = clone(img); for (let p = 0; p < img.w * img.h; p++) { const u = r(); if (u < amount / 2) o.d[p] = 0; else if (u < amount) o.d[p] = 255; } return o; }
+function otsu(h) {
+  let total = 0, sum = 0; for (let i = 0; i < 256; i++) { total += h[i]; sum += i * h[i]; }
+  let wB = 0, sumB = 0, best = 0, T = 0;
+  for (let t = 0; t < 256; t++) { wB += h[t]; if (!wB) continue; const wF = total - wB; if (!wF) break; sumB += t * h[t]; const mB = sumB / wB, mF = (sum - sumB) / wF, v = wB * wF * (mB - mF) ** 2; if (v > best) { best = v; T = t; } }
+  return T;
+}
+function medianFilter(img, k) {
+  const { w, h } = img, o = mk(w, h, 1), a = k >> 1, buf = new Uint8Array(k * k), mid = (k * k) >> 1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    let n = 0; for (let j = -a; j <= a; j++) { const row = refl(y + j, h) * w; for (let i = -a; i <= a; i++) buf[n++] = img.d[row + refl(x + i, w)]; }
+    buf.sort(); o.d[y * w + x] = buf[mid];
+  }
+  return o;
+}
+/* inverse-mapped affine warp, bilinear, constant black border (cv2.warpAffine defaults) */
+function warp(img, M, ow, oh) {
+  const [a, b, e, c, d, f] = M, det = a * d - b * c, ia = d / det, ib = -b / det, ic = -c / det, id = a / det;
+  const o = mk(ow, oh, img.c), { w, h } = img, C = img.c;
+  for (let y = 0; y < oh; y++) for (let x = 0; x < ow; x++) {
+    const X = x - e, Y = y - f, sx = ia * X + ib * Y, sy = ic * X + id * Y;
+    const x0 = Math.floor(sx), y0 = Math.floor(sy), fx = sx - x0, fy = sy - y0;
+    for (let ch = 0; ch < C; ch++) {
+      let v = 0;
+      for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) { const xx = x0 + i, yy = y0 + j; if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue; v += (i ? fx : 1 - fx) * (j ? fy : 1 - fy) * img.d[(yy * w + xx) * C + ch]; }
+      o.d[(y * ow + x) * C + ch] = Math.round(v);
+    }
+  }
+  return o;
+}
+function cubicW(t) { const A = -0.75; t = Math.abs(t); return t <= 1 ? ((A + 2) * t - (A + 3)) * t * t + 1 : t < 2 ? ((A * t - 5 * A) * t + 8 * A) * t - 4 * A : 0; }
+function resize(img, nw, nh, mode) {
+  const { w, h, c } = img, o = mk(nw, nh, c), sx = w / nw, sy = h / nh;
+  for (let y = 0; y < nh; y++) for (let x = 0; x < nw; x++) {
+    const oi = (y * nw + x) * c;
+    if (mode === "NEAREST") { const xs = Math.min(Math.floor(x * sx), w - 1), ys = Math.min(Math.floor(y * sy), h - 1); for (let ch = 0; ch < c; ch++) o.d[oi + ch] = img.d[(ys * w + xs) * c + ch]; continue; }
+    const fx = (x + 0.5) * sx - 0.5, fy = (y + 0.5) * sy - 0.5, x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+    for (let ch = 0; ch < c; ch++) {
+      let v = 0;
+      if (mode === "LINEAR") { for (let j = 0; j < 2; j++) for (let i = 0; i < 2; i++) v += (i ? tx : 1 - tx) * (j ? ty : 1 - ty) * img.d[(clampI(y0 + j, h) * w + clampI(x0 + i, w)) * c + ch]; }
+      else { for (let j = -1; j < 3; j++) { const wy = cubicW(ty - j), row = clampI(y0 + j, h) * w; for (let i = -1; i < 3; i++) v += wy * cubicW(tx - i) * img.d[(row + clampI(x0 + i, w)) * c + ch]; } }
+      o.d[oi + ch] = Math.round(v);
+    }
+  }
+  return o;
+}
+/* median-cut quantization, like Image.quantize() on RGB images */
+function quantize(img, k) {
+  const n = img.w * img.h, d = img.d; let idx = new Uint32Array(n); for (let i = 0; i < n; i++) idx[i] = i;
+  const boxes = [{ s: 0, e: n }];
+  const info = b => { let mn = [255, 255, 255], mx = [0, 0, 0]; for (let i = b.s; i < b.e; i++) { const j = idx[i] * 3; for (let ch = 0; ch < 3; ch++) { const v = d[j + ch]; if (v < mn[ch]) mn[ch] = v; if (v > mx[ch]) mx[ch] = v; } } let ch = 0; for (let q = 1; q < 3; q++) if (mx[q] - mn[q] > mx[ch] - mn[ch]) ch = q; b.ch = ch; b.range = mx[ch] - mn[ch]; };
+  info(boxes[0]);
+  while (boxes.length < k) {
+    let bi = -1; for (let i = 0; i < boxes.length; i++) if (boxes[i].e - boxes[i].s > 1 && boxes[i].range > 0 && (bi < 0 || boxes[i].range * (boxes[i].e - boxes[i].s) > boxes[bi].range * (boxes[bi].e - boxes[bi].s))) bi = i;
+    if (bi < 0) break;
+    const b = boxes[bi], ch = b.ch, sub = Array.from(idx.subarray(b.s, b.e)).sort((p, q) => d[p * 3 + ch] - d[q * 3 + ch]);
+    idx.set(sub, b.s); const m = b.s + ((b.e - b.s) >> 1);
+    const b2 = { s: m, e: b.e }; b.e = m; info(b); info(b2); boxes.push(b2);
+  }
+  const o = mk(img.w, img.h, 3);
+  for (const b of boxes) { const s = [0, 0, 0]; for (let i = b.s; i < b.e; i++) for (let ch = 0; ch < 3; ch++) s[ch] += d[idx[i] * 3 + ch]; const cnt = b.e - b.s; for (let i = b.s; i < b.e; i++) for (let ch = 0; ch < 3; ch++) o.d[idx[i] * 3 + ch] = s[ch] / cnt; }
+  return { img: o, colors: boxes.length };
+}
+/* SVD of a square grayscale image via Jacobi on AᵀA */
+function svdPrep(g) {
+  const n = g.w, A = new Float64Array(n * n); for (let i = 0; i < n * n; i++) A[i] = g.d[i];
+  const B = new Float64Array(n * n);
+  for (let i = 0; i < n; i++) for (let j = i; j < n; j++) { let s = 0; for (let r = 0; r < n; r++) s += A[r * n + i] * A[r * n + j]; B[i * n + j] = B[j * n + i] = s; }
+  const V = new Float64Array(n * n); for (let i = 0; i < n; i++) V[i * n + i] = 1;
+  for (let sweep = 0; sweep < 12; sweep++) {
+    let off = 0;
+    for (let p = 0; p < n - 1; p++) for (let q = p + 1; q < n; q++) {
+      const bpq = B[p * n + q]; if (Math.abs(bpq) < 1e-12 * (Math.abs(B[p * n + p]) + Math.abs(B[q * n + q]) + 1e-300)) continue;
+      off += bpq * bpq;
+      const th = (B[q * n + q] - B[p * n + p]) / (2 * bpq), t = Math.sign(th || 1) / (Math.abs(th) + Math.sqrt(th * th + 1)), c = 1 / Math.sqrt(t * t + 1), s = t * c;
+      for (let k = 0; k < n; k++) { const kp = B[k * n + p], kq = B[k * n + q]; B[k * n + p] = c * kp - s * kq; B[k * n + q] = s * kp + c * kq; }
+      for (let k = 0; k < n; k++) { const pk = B[p * n + k], qk = B[q * n + k]; B[p * n + k] = c * pk - s * qk; B[q * n + k] = s * pk + c * qk; }
+      for (let k = 0; k < n; k++) { const kp = V[k * n + p], kq = V[k * n + q]; V[k * n + p] = c * kp - s * kq; V[k * n + q] = s * kp + c * kq; }
+    }
+    if (off < 1e-6) break;
+  }
+  const order = [...Array(n).keys()].sort((a, b) => B[b * n + b] - B[a * n + a]);
+  const sig = order.map(i => Math.sqrt(Math.max(B[i * n + i], 0)));
+  const Vs = new Float64Array(n * n); order.forEach((src, dst) => { for (let k = 0; k < n; k++) Vs[k * n + dst] = V[k * n + src]; });
+  const AV = new Float64Array(n * n);
+  for (let r = 0; r < n; r++) for (let i = 0; i < n; i++) { let s = 0; for (let k = 0; k < n; k++) s += A[r * n + k] * Vs[k * n + i]; AV[r * n + i] = s; }
+  return { n, sig, V: Vs, AV };
+}
+function svdRecon(P, k) { const { n, V, AV } = P, o = mk(n, n, 1); for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) { let s = 0; for (let i = 0; i < k; i++) s += AV[r * n + i] * V[c * n + i]; o.d[r * n + c] = Math.round(s); } return o; }
+function down2(g) { const w = g.w >> 1, o = mk(w, w, 1); for (let y = 0; y < w; y++) for (let x = 0; x < w; x++) { const i = 2 * y * g.w + 2 * x; o.d[y * w + x] = (g.d[i] + g.d[i + 1] + g.d[i + g.w] + g.d[i + g.w + 1]) / 4; } return o; }
+
+/* ================= sample image ================= */
+function makeSample() {
+  const c = document.createElement("canvas"); c.width = c.height = N; const x = c.getContext("2d"), r = rng(11);
+  const g = x.createLinearGradient(0, 0, 0, 175); g.addColorStop(0, "#13204b"); g.addColorStop(0.55, "#c4566c"); g.addColorStop(1, "#f6c873");
+  x.fillStyle = g; x.fillRect(0, 0, N, 180);
+  x.fillStyle = "#ffffff"; for (let i = 0; i < 26; i++) x.fillRect(Math.floor(r() * N), Math.floor(r() * 55), 1, 1);
+  x.fillStyle = "#ffe2a0"; x.beginPath(); x.arc(190, 126, 24, 0, Math.PI * 2); x.fill();
+  x.fillStyle = "#4a3e66"; for (let px = -6; px < N;) { const w = 10 + r() * 18, h = 28 + r() * 52; x.fillRect(px, 172 - h, w, h + 8); px += w - 2; }
+  for (let bx = -6; bx < N;) {
+    const w = 24 + r() * 30, h = 56 + r() * 92, top = 202 - h;
+    x.fillStyle = "#1b1a2a"; x.fillRect(bx, top, w, h);
+    for (let wy = top + 6; wy < 194; wy += 9) for (let wx = bx + 4; wx < bx + w - 5; wx += 7) if (r() < 0.45) { x.fillStyle = r() < 0.8 ? "#ffcd6b" : "#9cd2ff"; x.fillRect(wx, wy, 4, 5); }
+    bx += w + 3;
+  }
+  x.fillStyle = "#2a2940"; x.fillRect(114, 46, 22, 156);
+  x.fillStyle = "#dcdcec"; for (let sx = 115; sx < 136; sx += 3) x.fillRect(sx, 50, 1, 148);
+  x.fillStyle = "#28282e"; x.fillRect(0, 202, N, 54);
+  x.fillStyle = "#56565f"; x.fillRect(0, 202, N, 4);
+  x.fillStyle = "#f2f2f2"; for (let lx = 4; lx < N; lx += 32) x.fillRect(lx, 232, 18, 3);
+  x.fillStyle = "#e0473c"; x.beginPath(); x.roundRect(40, 214, 66, 16, 5); x.fill(); x.beginPath(); x.roundRect(54, 204, 36, 13, 5); x.fill();
+  x.fillStyle = "#bfe4ff"; x.fillRect(58, 207, 12, 7); x.fillRect(73, 207, 13, 7);
+  x.fillStyle = "#fff6bf"; x.fillRect(101, 218, 5, 4);
+  x.fillStyle = "#0b0b0d"; [[56, 230], [92, 230]].forEach(([cx, cy]) => { x.beginPath(); x.arc(cx, cy, 6, 0, Math.PI * 2); x.fill(); });
+  x.fillStyle = "#8a8a94"; [[56, 230], [92, 230]].forEach(([cx, cy]) => { x.beginPath(); x.arc(cx, cy, 2, 0, Math.PI * 2); x.fill(); });
+  return fromID(x.getImageData(0, 0, N, N));
+}
+
+/* ================= chart drawing ================= */
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function prep(cv, hCss) {
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth || 300;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(hCss * dpr); cv.style.height = hCss + "px";
+  const x = cv.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, w, hCss);
+  return [x, w, hCss];
+}
+function axisX(x, l, r, y) {
+  x.fillStyle = css("--muted"); x.font = "11px " + css("--mono"); x.textBaseline = "top";
+  [0, 64, 128, 192, 255].forEach((v, i, a) => { const px = l + (v / 255) * (r - l); x.textAlign = i === 0 ? "left" : i === a.length - 1 ? "right" : "center"; x.fillText(v, px, y + 4); });
+}
+/* series: [{h, color, mode:'area'|'line'}]; each normalized to its own peak */
+function drawHist(cv, series, opt = {}) {
+  const [x, w, h] = prep(cv, 120), l = 2, r = w - 2, top = 6, bot = h - 20;
+  x.strokeStyle = css("--line"); x.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) { const yy = Math.round(top + (bot - top) * i / 4) + 0.5; x.beginPath(); x.moveTo(l, yy); x.lineTo(r, yy); x.stroke(); }
+  for (const s of series) {
+    let mx = 1; for (let i = 0; i < 256; i++) if (s.h[i] > mx) mx = s.h[i];
+    const px = i => l + (i / 255) * (r - l), py = v => bot - (v / mx) * (bot - top);
+    x.beginPath(); x.moveTo(px(0), bot);
+    for (let i = 0; i < 256; i++) x.lineTo(px(i), py(s.h[i]));
+    x.lineTo(px(255), bot); x.closePath();
+    if (s.mode === "line") { x.strokeStyle = s.color; x.lineWidth = 1.25; x.stroke(); }
+    else { x.globalAlpha = s.alpha ?? 1; x.fillStyle = s.color; x.fill(); x.globalAlpha = 1; }
+  }
+  if (opt.line != null) {
+    const px = l + (opt.line / 255) * (r - l);
+    x.strokeStyle = css("--fg"); x.setLineDash([4, 3]); x.lineWidth = 1.5; x.beginPath(); x.moveTo(px, top); x.lineTo(px, bot); x.stroke(); x.setLineDash([]);
+    x.fillStyle = css("--fg"); x.font = "500 11px " + css("--mono"); x.textBaseline = "top"; x.textAlign = px > w - 60 ? "right" : "left"; x.fillText("T = " + opt.line, px + (px > w - 60 ? -5 : 5), top);
+  }
+  axisX(x, l, r, bot);
+  cv._hist = { series, l, r };
+}
+function drawCurve(cv, lut) {
+  const s = 120, dpr = window.devicePixelRatio || 1; cv.width = s * dpr; cv.height = s * dpr;
+  const x = cv.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0); x.clearRect(0, 0, s, s);
+  const p = 6, q = s - 6, map = v => p + (v / 255) * (q - p);
+  x.fillStyle = css("--frame"); x.fillRect(p, p, q - p, q - p);
+  x.strokeStyle = css("--faint"); x.setLineDash([3, 3]); x.beginPath(); x.moveTo(p, q); x.lineTo(q, p); x.stroke(); x.setLineDash([]);
+  x.strokeStyle = css("--fg"); x.lineWidth = 2; x.beginPath();
+  for (let r = 0; r < 256; r++) { const X = map(r), Y = q - (map(lut[r]) - p); r ? x.lineTo(X, Y) : x.moveTo(X, Y); }
+  x.stroke();
+}
+function drawSigma(cv, sig, k) {
+  const [x, w, h] = prep(cv, 120), l = 2, r = w - 2, top = 6, bot = h - 20, n = sig.length;
+  const lg = v => Math.log10(Math.max(v, 1e-3)), lo = lg(sig[n - 1] || 1e-3), hi = lg(sig[0]);
+  const bw = (r - l) / n;
+  for (let i = 0; i < n; i++) { const y = bot - ((lg(sig[i]) - lo) / (hi - lo || 1)) * (bot - top); x.fillStyle = i < k ? css("--fg") : css("--faint"); x.fillRect(l + i * bw, y, Math.max(bw - 0.5, 0.6), bot - y); }
+  x.fillStyle = css("--muted"); x.font = "11px " + css("--mono"); x.textBaseline = "top";
+  x.textAlign = "left"; x.fillText("1", l, bot + 4); x.textAlign = "center"; x.fillText(String(k), Math.min(Math.max(l + (k - 0.5) * bw, 20), r - 20), bot + 4); x.textAlign = "right"; x.fillText(String(n), r, bot + 4);
+}
+function renderKernels(el, list) {
+  el.innerHTML = "";
+  for (const { k, kw, kh, dec, label } of list) {
+    const box = document.createElement("div"); box.className = "extra";
+    if (label) { const s = document.createElement("span"); s.className = "lbl"; s.textContent = label; box.appendChild(s); }
+    const g = document.createElement("div"), tiny = kw > 7; g.className = "kgrid" + (tiny ? " tiny" : ""); g.style.gridTemplateColumns = `repeat(${kw}, auto)`;
+    let mx = 0; for (const v of k) mx = Math.max(mx, Math.abs(v));
+    k.forEach(v => {
+      const c = document.createElement("div"), a = mx ? Math.abs(v) / mx : 0;
+      c.style.background = `color-mix(in srgb, var(--fg) ${Math.round(8 + a * 80)}%, transparent)`;
+      c.style.color = a > 0.5 ? "var(--bg)" : "var(--fg)";
+      if (!tiny) c.textContent = Number.isInteger(v) ? v : v.toFixed(dec ?? 2).replace(/^(-?)0\./, "$1.");
+      c.title = String(+v.toFixed(4)); g.appendChild(c);
+    });
+    box.appendChild(g); el.appendChild(box);
+  }
+}
+function renderMatrix(el, M, dec) { el.innerHTML = M.map(v => `<span>${(+v.toFixed(dec)).toString()}</span>`).join(""); }
+
+
+/* ================= code explanations ================= */
+const TIPS = {
+  "image": "The input image. In Pillow it is an Image object; in OpenCV it is a NumPy array of shape (rows, cols, 3), with channels in B, G, R order.",
+  "new_image": "A new variable for the result, so the original image is left unchanged.",
+  "image_gray": "A new variable holding the one-channel grayscale image.",
+  "img_gray": "The grayscale input. Edge detection works on intensity, so color is dropped first.",
+  "ImageOps.grayscale": "Pillow function that converts a color image to grayscale (mode \"L\") with the weights 0.299 R + 0.587 G + 0.114 B.",
+  "cv2.cvtColor": "OpenCV function that converts an image from one color space to another.",
+  "cv2.COLOR_BGR2GRAY": "Conversion code: from OpenCV's B, G, R color order to a single grayscale channel.",
+  ".mean": "NumPy method that averages values along an axis.",
+  "axis=2": "Axis 2 is the channel axis, so each pixel's R, G and B are averaged with equal weight.",
+  ".astype(np.uint8)": "Converts the values to 8-bit unsigned integers (0 to 255), the type images are stored in. Values outside that range wrap around.",
+  ".astype(int)": "Converts to ordinary integers first, so the arithmetic can go above 255 or below 0 without wrapping.",
+  ".copy": "Makes an independent copy, so later changes to it don't affect the original.",
+  "np.copy": "NumPy function that returns an independent copy of an array.",
+  "np.array": "Converts a Pillow image into a NumPy array of pixel values.",
+  "id": "Returns an object's identity in memory. Equal ids mean both names point to the same array.",
+  "A": "The first name for the image array.",
+  "B": "A second name. Whether it shares memory with A depends on how it was created.",
+  ".quantize": "Pillow method that reduces the image to a small palette, choosing the colors with median cut.",
+  "colors=": "How many colors the new palette may use.",
+  "image_q": "The quantized image, stored in palette mode.",
+  ".transpose": "Pillow method that flips or rotates an image in steps of 90°. Pixels are only moved, never changed.",
+  "cv2.flip": "OpenCV function that mirrors an image. The second argument picks the axis.",
+  "cv2.rotate": "OpenCV function that rotates an image by exactly 90°, 180° or 270°.",
+  "cv2.transpose": "OpenCV function that swaps rows and columns, mirroring the image across its main diagonal.",
+  "crop": "The cut-out part of the image.",
+  ".crop": "Pillow method that cuts out a box given as (left, upper, right, lower).",
+  "array": "The image as a NumPy array.",
+  "array_sq": "A copy of the array that will be edited.",
+  "image_draw": "A copy of the image to draw on.",
+  "ImageDraw.Draw": "Creates a drawing object. Everything drawn with it is written straight into the image you pass in.",
+  "im=": "The image the drawing object writes into.",
+  ".rectangle": "Draws a rectangle. xy is the box [left, upper, right, lower].",
+  "xy=": "The rectangle's corners as [left, upper, right, lower].",
+  "fill=\"red\"": "Fills the rectangle with solid red.",
+  ".paste": "Pillow method that copies one image onto another. It changes the target image in place.",
+  "box=": "Where to paste: the (left, upper) corner of the pasted image.",
+  "Image.FLIP_LEFT_RIGHT": "Mirror left to right.",
+  "hist": "An array of 256 counts, one for each intensity value.",
+  "cv2.calcHist": "OpenCV function that counts how many pixels fall into each intensity bin.",
+  "None": "No mask, so every pixel is counted.",
+  "256": "The number of bins: one for each possible intensity, 0 to 255.",
+  "0, 256": "The range of values to count. The upper bound is not included, so this covers 0 to 255.",
+  "for": "Loop over the three channels.",
+  "enumerate": "Gives each item together with its position: 0 blue, 1 green, 2 red.",
+  "img_neg": "The negative image.",
+  "cv2.convertScaleAbs": "OpenCV function that computes |alpha · pixel + beta|, then clips to 0–255 and converts to 8-bit.",
+  "cv2.equalizeHist": "OpenCV function that remaps intensities through the cumulative histogram so they spread over 0–255. It works on one-channel images.",
+  "ret": "The threshold that was actually used. With Otsu's method, this is the value it chose.",
+  "otsu": "The thresholded image.",
+  "cv2.threshold": "OpenCV function that compares every pixel with a threshold and sets it to one of two values.",
+  "cv2.resize": "OpenCV function that changes an image's size.",
+  "None ": "dsize. None means the output size is worked out from fx and fy instead.",
+  "fx=": "Scale factor for the width.",
+  "fy=": "Scale factor for the height.",
+  "interpolation=": "How new pixel values are estimated when the grid changes size.",
+  "M": "The 2 × 3 affine matrix. Its left 2 × 2 part rotates or scales, its last column shifts.",
+  "np.float32": "Builds the matrix as 32-bit floats, the type warpAffine expects.",
+  "cv2.warpAffine": "OpenCV function that applies the matrix M: for every output pixel it finds where it came from in the input and blends the nearest pixels.",
+  "cols": "The image width in pixels (number of columns).",
+  "rows": "The image height in pixels (number of rows).",
+  "(cols, rows)": "The output size as (width, height). Here it matches the input, so anything moved past the edge is cut off.",
+  "cv2.getRotationMatrix2D": "OpenCV function that builds the 2 × 3 matrix for a rotation about a center point, with optional scaling.",
+  "center=": "The point the image turns around, as (x, y). Here it is the middle of the image.",
+  "angle=": "Rotation in degrees. Positive values turn counter-clockwise.",
+  "scale=": "Zoom applied together with the rotation. 1 keeps the original size.",
+  ".rotate": "Pillow's own rotate method. It also turns counter-clockwise and fills the corners with black.",
+  "np.clip": "Limits every value to a range, here 0 to 255, instead of letting it wrap around.",
+  "noise": "An array of random values with the same shape as the image.",
+  "np.random.normal": "NumPy function that draws random numbers from a normal (Gaussian) distribution.",
+  "U": "Left singular vectors: one column pattern per layer.",
+  "s": "The singular values, largest first. Each says how much its layer contributes.",
+  "V": "Right singular vectors: one row pattern per layer.",
+  "np.linalg.svd": "NumPy function that factors a matrix into U · diag(s) · V.",
+  "full_matrices=True": "Return the complete square U and V matrices.",
+  "S": "The singular values placed on the diagonal of a matrix, so they can be multiplied.",
+  "np.diag": "Builds a diagonal matrix from a list of values.",
+  "@": "Matrix multiplication.",
+  "image_k": "The rank-k approximation of the image.",
+  "kernel": "The small grid of weights that slides over the image.",
+  "np.ones": "Makes an array filled with ones: every neighbor gets the same weight.",
+  "noisy_image": "The image with random noise added, to show what filtering removes.",
+  "image_filtered": "The filtered result.",
+  "cv2.filter2D": "OpenCV function that slides the kernel over every pixel and replaces it with the weighted sum of its neighborhood, on each channel separately.",
+  "src=": "The input image.",
+  "ddepth=-1": "Output depth. −1 keeps the same 8-bit type as the input.",
+  "kernel=": "The kernel to apply.",
+  "cv2.GaussianBlur": "OpenCV function that smooths the image with a Gaussian kernel.",
+  "sigmaX=": "Standard deviation of the Gaussian across the width.",
+  "sigmaY=": "Standard deviation of the Gaussian down the height.",
+  "np.array ": "Writes the kernel out by hand as a 3 × 3 array.",
+  "sharpened": "The sharpened image.",
+  "-1": "ddepth: −1 keeps the input's 8-bit depth.",
+  ".filter": "Pillow method that applies a filter to every channel.",
+  "ImageFilter.SHARPEN": "Pillow's built-in 3 × 3 sharpening kernel: center 32, neighbors −2, divided by 16.",
+  "grad_x": "The horizontal gradient: how fast intensity changes from left to right.",
+  "grad_y": "The vertical gradient: how fast intensity changes from top to bottom.",
+  "grad": "The combined edge strength.",
+  "cv2.Sobel": "OpenCV function that estimates the image derivative with a Sobel kernel.",
+  "ddepth=cv2.CV_16S": "Signed 16-bit output, so negative gradients are kept instead of being clipped to 0.",
+  "ksize=3": "Use the 3 × 3 Sobel kernel.",
+  "abs_grad_x": "The horizontal gradient as 8-bit absolute values.",
+  "abs_grad_y": "The vertical gradient as 8-bit absolute values.",
+  "cv2.addWeighted": "OpenCV function that blends two images: a · w1 + b · w2 + gamma.",
+  "0.5": "Weight of 0.5, so both directions count equally.",
+  "filtered_image": "The filtered result.",
+  "cv2.medianBlur": "OpenCV function that replaces each pixel with the median of its square neighborhood. The size must be odd.",
+  "cv2.blur": "OpenCV function for a plain mean filter: the average of a box of neighbors.",
+};
+
+/* ================= operations ================= */
+const fmtPx = (img, x, y) => { const i = (y * img.w + x) * img.c; return img.c === 1 ? String(img.d[i]) : `(${img.d[i]}, ${img.d[i + 1]}, ${img.d[i + 2]})`; };
+const FLIPS = {
+  FLIP_LEFT_RIGHT: { f: (x, y) => [N - 1 - x, y], cv: "«cv2.flip»(«image», «1|Flip code 1: mirror around the vertical axis, left to right.»)" },
+  FLIP_TOP_BOTTOM: { f: (x, y) => [x, N - 1 - y], cv: "«cv2.flip»(«image», «0|Flip code 0: mirror around the horizontal axis, top to bottom.»)" },
+  ROTATE_90: { f: (x, y) => [N - 1 - y, x], cv: "«cv2.rotate»(«image», «cv2.ROTATE_90_COUNTERCLOCKWISE|Turn 90° counter-clockwise, the same direction as Pillow's ROTATE_90.»)" },
+  ROTATE_180: { f: (x, y) => [N - 1 - x, N - 1 - y], cv: "«cv2.rotate»(«image», «cv2.ROTATE_180|Turn 180°.»)" },
+  ROTATE_270: { f: (x, y) => [y, N - 1 - x], cv: "«cv2.rotate»(«image», «cv2.ROTATE_90_CLOCKWISE|Turn 90° clockwise, which equals 270° counter-clockwise.»)" },
+  TRANSPOSE: { f: (x, y) => [y, x], cv: "«cv2.transpose»(«image»)" },
+  TRANSVERSE: { f: (x, y) => [N - 1 - y, N - 1 - x], cv: "«cv2.flip»(«cv2.transpose»(«image»), «-1|Flip code −1: mirror around both axes.»)" },
+};
+const FLIP_TIPS = {
+  FLIP_LEFT_RIGHT: "mirrors left to right.", FLIP_TOP_BOTTOM: "mirrors top to bottom.", ROTATE_90: "turns 90° counter-clockwise.", ROTATE_180: "turns 180°.",
+  ROTATE_270: "turns 270° counter-clockwise (90° clockwise).", TRANSPOSE: "swaps rows and columns, mirroring across the top-left to bottom-right diagonal.", TRANSVERSE: "mirrors across the other diagonal, top-right to bottom-left.",
+};
+const SHARP = { custom: [-1, -1, -1, -1, 9, -1, -1, -1, -1], pil: [-2, -2, -2, -2, 32, -2, -2, -2, -2].map(v => v / 16) };
+const SOBX = [-1, 0, 1, -2, 0, 2, -1, 0, 1], SOBY = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+const num = v => String(+(+v).toFixed(2));
+const BOX = [
+  { type: "range", key: "u", name: "upper", label: "first row", tip: "upper: the first row kept. Rows are counted from the top, starting at 0.", min: 0, max: 252, step: 1, value: 40 },
+  { type: "range", key: "lo", name: "lower", label: "row to stop at", tip: "lower: slicing stops before this row, so it is not included.", min: 4, max: 256, step: 1, value: 150 },
+  { type: "range", key: "l", name: "left", label: "first column", tip: "left: the first column kept, counted from the left edge.", min: 0, max: 252, step: 1, value: 64 },
+  { type: "range", key: "r", name: "right", label: "column to stop at", tip: "right: slicing stops before this column, so it is not included.", min: 4, max: 256, step: 1, value: 176 },
+];
+const fixBox = s => { s.u = Math.min(s.u, 252); s.l = Math.min(s.l, 252); if (s.lo < s.u + 4) s.lo = s.u + 4; if (s.r < s.l + 4) s.r = s.l + 4; };
+
+const GROUPS = [
+  { id: "pixels", lab: "Labs 2.1.1 and 2.1.2", title: "Pixels and channels" },
+  { id: "manipulation", lab: "Labs 2.2.1 and 2.2.2", title: "Basic manipulation" },
+  { id: "intensity", lab: "Lab 2.3.2", title: "Histograms and intensity" },
+  { id: "geometry", lab: "Labs 2.4.1 and 2.4.2", title: "Geometry and math" },
+  { id: "filtering", lab: "Labs 2.5.1 and 2.5.2", title: "Spatial filtering" },
+];
+
+const OPS = [
+/* ---------- pixels ---------- */
+{ id: "grayscale", group: "pixels", title: "Grayscale", pixelwise: true,
+  text: "A grayscale image keeps one number per pixel: how much light it carries. Both libraries compute it as a weighted sum, 0.299 R + 0.587 G + 0.114 B, giving green the most weight because our eyes are most sensitive to it. The array drops from three channels to one, so its shape goes from (256, 256, 3) to (256, 256).",
+  look: "Hover the two images to compare a color pixel with its gray value. Then switch to a plain average and watch the red car and the blue sky change brightness.",
+  panes: ["Input · RGB", "Output · grayscale"],
+  controls: [{ type: "chips", key: "w", name: "weights", label: "how channels are combined", tip: "The library functions always use the weighted sum. The plain average is shown for comparison.", value: "luma", options: [["luma", "0.299 · 0.587 · 0.114"], ["avg", "Plain average"]] }],
+  code: s => s.w === "luma"
+    ? "«image_gray» = «ImageOps.grayscale»(«image»)   # Pillow\n«image_gray» = «cv2.cvtColor»(«image», «cv2.COLOR_BGR2GRAY»)   # OpenCV"
+    : "«image_gray» = «image»«.mean»(«axis=2»)«.astype(np.uint8)»   # equal weights, for comparison",
+  run(s, v) { v.show(0, SRC); v.show(1, s.w === "luma" ? GRAY : toGray(SRC, true)); } },
+
+{ id: "channels", group: "pixels", title: "Color channels", pixelwise: true,
+  text: "A color image is three grayscale layers stacked together: red, green and blue. Setting two of them to zero leaves only the third, and the bright areas show where that color is strong. OpenCV loads images in B, G, R order, so channel 0 is blue, and plotting an image without converting it swaps red and blue.",
+  look: "Bright areas in the output are where the kept color is strong. Try each channel, then Plotted as BGR to see the classic OpenCV color mix-up.",
+  panes: ["Input", "Output"],
+  controls: [{ type: "chips", key: "ch", name: "channel", label: "which color to keep", tip: "Which channel survives. The other two are set to 0.", value: "red", options: [["red", "Red"], ["green", "Green"], ["blue", "Blue"], ["bgr", "Plotted as BGR"]] }],
+  code: s => {
+    if (s.ch === "bgr") return "«image» = «cv2.imread|OpenCV function that loads an image file as a NumPy array in B, G, R order.»(«\"image.png\"|The file to load.»)\n«plt.imshow|Matplotlib function that displays an array. It assumes R, G, B order.»(«image»)   # red and blue appear swapped";
+    const name = { red: "image_red", green: "image_green", blue: "image_blue" }[s.ch], keep = { red: 2, green: 1, blue: 0 }[s.ch], names = ["blue", "green", "red"];
+    const nt = `A copy that will keep only the ${s.ch} channel.`, lines = [`«${name}|${nt}» = «image»«.copy»()`];
+    [0, 1, 2].filter(c => c !== keep).forEach(c => lines.push(`«${name}|${nt}»«[:, :, ${c}]|Every row, every column, channel ${c}. In OpenCV's B, G, R order that is ${names[c]}.» = «0|Setting the whole channel to 0 removes that color.»   # ${names[c]}`));
+    return lines.join("\n");
+  },
+  run(s, v) {
+    const o = clone(SRC);
+    for (let p = 0; p < N * N; p++) { const j = p * 3; if (s.ch === "bgr") { o.d[j] = SRC.d[j + 2]; o.d[j + 2] = SRC.d[j]; } else { const keep = { red: 0, green: 1, blue: 2 }[s.ch]; for (let c = 0; c < 3; c++) if (c !== keep) o.d[j + c] = 0; } }
+    v.show(0, SRC); v.show(1, o);
+  } },
+
+{ id: "quantize", group: "pixels", title: "Quantization", pixelwise: true,
+  text: "Quantization reduces how many distinct colors an image uses. Pillow's quantize() splits all the colors into groups (median cut) and replaces every pixel with the average color of its group.",
+  look: "With few colors the smooth sky breaks into bands. Drag colors down to 2 and back up to see how quickly the image recovers.",
+  panes: ["Input", "Output"],
+  controls: [{ type: "range", key: "k", name: "colors", label: "palette size", tip: "How many colors the palette may hold. Fewer colors means a smaller file and more visible banding.", min: 2, max: 64, step: 1, value: 8 }],
+  code: s => "«image_q» = «image»«.quantize»(«colors=»‹k›)",
+  run(s, v) { const q = quantize(SRC, s.k); v.show(0, SRC); v.show(1, q.img, `${q.colors} colors`); } },
+
+/* ---------- manipulation ---------- */
+{ id: "copy", group: "manipulation", title: "Copy or alias", pixelwise: true,
+  text: "Assigning an array to a new name does not copy it. Both names point to the same pixels in memory, so changing one changes the other. This is called aliasing. Calling copy() makes an independent array that keeps the original values.",
+  look: "The image panel now shows A and B. Run the extra line below to set A to zero, then check whether B went black too. Switch B to A.copy() in step 2 and run it again.",
+  panes: ["A", "B"],
+  controls: [
+    { type: "chips", key: "mode", name: "B", label: "how B is made", tip: "B = A gives a second name for the same array. B = A.copy() makes a separate array.", value: "alias", options: [["alias", "B = A"], ["copy", "B = A.copy()"]] },
+    { type: "buttons", where: "output", label: "Change A", items: [["Run A[:, :, :] = 0", s => s.zeroed = true], ["Undo that line", s => s.zeroed = false]] },
+  ],
+  code: s => `«A» = «np.array»(«image»)\n«B» = ‹mode›\n${s.zeroed ? "«A[:, :, :] = 0|Sets every pixel in every channel of A to 0 (black).»\n" : ""}«id»(«A») == «id»(«B»)   # ${s.mode === "alias" ? "True" : "False"}`,
+  codeFmt: { mode: v => v === "alias" ? "A" : "A.copy()" },
+  run(s, v) { const black = mk(N, N, 3); v.show(0, s.zeroed ? black : SRC); v.show(1, s.zeroed && s.mode === "alias" ? black : SRC); } },
+
+{ id: "flip", group: "manipulation", title: "Flip and rotate by 90°",
+  text: "Flipping and right-angle rotation only move pixels to new positions, so no values change and nothing is lost. Pillow does all of these with transpose(); OpenCV uses flip() with an axis code and rotate().",
+  look: "Watch where the car and the striped tower end up. ROTATE_90 turns counter-clockwise; TRANSPOSE mirrors across the diagonal.",
+  panes: ["Input", "Output"],
+  controls: [{ type: "chips", key: "t", name: "method", label: "which transpose", tip: "", wide: true, value: "FLIP_LEFT_RIGHT", options: Object.keys(FLIPS).map(k => [k, k]) }],
+  code: s => `«new_image» = «image»«.transpose»(‹t›)   # Pillow\n«new_image» = ${FLIPS[s.t].cv}   # OpenCV`,
+  codeFmt: { t: v => "Image." + v },
+  tipFor: { t: s => `Image.${s.t} ${FLIP_TIPS[s.t]}` },
+  run(s, v) { const o = mk(N, N, 3), f = FLIPS[s.t].f; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const [sx, sy] = f(x, y), i = (y * N + x) * 3, j = (sy * N + sx) * 3; o.d[i] = SRC.d[j]; o.d[i + 1] = SRC.d[j + 1]; o.d[i + 2] = SRC.d[j + 2]; } v.show(0, SRC); v.show(1, o); } },
+
+{ id: "crop", group: "manipulation", title: "Cropping", region: true,
+  text: "Cropping keeps a rectangle and throws away the rest. On an array it is plain slicing, rows first and then columns. Pillow's crop() takes the same box, but in the order (left, upper, right, lower).",
+  look: "The output is enlarged to fit its frame. Drag across the input image to draw a new box, or fine-tune it with the four values.",
+  panes: ["Input · drag to select", "Output"],
+  controls: BOX,
+  code: s => "«crop» = «image»[‹u›:‹lo›, ‹l›:‹r›]   # array slicing: rows, then columns\n«crop» = «image»«.crop»((‹l›, ‹u›, ‹r›, ‹lo›))   # Pillow",
+  run(s, v) { fixBox(s); const o = mk(s.r - s.l, s.lo - s.u, 3); for (let y = s.u; y < s.lo; y++) for (let x = s.l; x < s.r; x++) { const i = ((y - s.u) * o.w + (x - s.l)) * 3, j = (y * N + x) * 3; o.d[i] = SRC.d[j]; o.d[i + 1] = SRC.d[j + 1]; o.d[i + 2] = SRC.d[j + 2]; } v.show(0, SRC); v.box(s); v.show(1, o); } },
+
+{ id: "pixels-edit", group: "manipulation", title: "Changing pixels", region: true, pixelwise: true,
+  text: "Indexing can also write pixels. You can zero out channels inside a box, draw a filled shape with ImageDraw, or paste one image on top of another. These change the image in place, so the code works on a copy.",
+  look: "Drag across the input to move the box. Hover inside the box to see the changed values.",
+  panes: ["Input · drag to select", "Output"],
+  controls: [{ type: "chips", key: "m", name: "operation", label: "what to do inside the box", tip: "Which edit to apply inside the box.", wide: true, value: "zero", options: [["zero", "Zero green and blue"], ["rect", "Draw a red rectangle"], ["paste", "Paste a mirrored crop"]] }, ...BOX],
+  code: s => ({
+    zero: "«array_sq» = «np.copy»(«array»)\n«array_sq»[‹u›:‹lo›, ‹l›:‹r›, «1:3|Channels 1 and 2. In a Pillow (R, G, B) array that is green and blue, so only red is left.»] = «0|Writes 0 into those channels for every pixel in the box.»",
+    rect: "«image_draw» = «image»«.copy»()\n«ImageDraw.Draw»(«im=»«image_draw»)«.rectangle»(«xy=»[‹l›, ‹u›, ‹r›, ‹lo›], «fill=\"red\"»)",
+    paste: "«crop» = «image»«.crop»((‹l›, ‹u›, ‹r›, ‹lo›))«.transpose»(«Image.FLIP_LEFT_RIGHT»)\n«new_image» = «image»«.copy»()\n«new_image»«.paste»(«crop», «box=»(‹l›, ‹u›))",
+  })[s.m],
+  run(s, v) {
+    fixBox(s); const o = clone(SRC);
+    for (let y = s.u; y < s.lo; y++) for (let x = s.l; x < s.r; x++) {
+      const i = (y * N + x) * 3;
+      if (s.m === "zero") { o.d[i + 1] = 0; o.d[i + 2] = 0; }
+      else if (s.m === "rect") { o.d[i] = 255; o.d[i + 1] = 0; o.d[i + 2] = 0; }
+      else { const j = (y * N + (s.r - 1 - (x - s.l))) * 3; o.d[i] = SRC.d[j]; o.d[i + 1] = SRC.d[j + 1]; o.d[i + 2] = SRC.d[j + 2]; }
+    }
+    v.show(0, SRC); v.box(s); v.show(1, o);
+  } },
+
+/* ---------- intensity ---------- */
+{ id: "histogram", group: "intensity", title: "Histogram", single: true,
+  text: "A histogram counts how many pixels have each intensity from 0 to 255. Its peaks show which tones dominate: dark images pile up on the left, bright ones on the right. A color image has one histogram per channel.",
+  look: "Hover the chart to read the count for any intensity. The tall hump on the left is the dark buildings and road; the spread to the right is the sky.",
+  panes: ["Input"], extras: [["hist", "Pixel count by intensity", true]],
+  controls: [{ type: "chips", key: "m", name: "channels", label: "which histogram", tip: "One gray histogram, or one per color channel.", value: "gray", options: [["gray", "Grayscale"], ["rgb", "Red, green, blue"]] }],
+  code: s => s.m === "gray"
+    ? "«hist» = «cv2.calcHist»([«image_gray»], [«0|The channel to count. A grayscale image only has channel 0.»], «None», [«256»], [«0, 256»])"
+    : "«for» «i|The channel index: 0 blue, 1 green, 2 red.», «col|The channel's name, used as the line color.» «in|Loop keyword.» «enumerate»((«'blue'|Channel 0 in OpenCV's B, G, R order.», «'green'|Channel 1.», «'red'|Channel 2.»)):\n    «hist» = «cv2.calcHist»([«image»], [«i|Which channel to count this time round the loop.»], «None», [«256»], [«0, 256»])",
+  run(s, v) {
+    if (s.m === "gray") { v.show(0, GRAY); drawHist(v.ex.hist, [{ h: hist(GRAY), color: css("--fg") }]); }
+    else { v.show(0, SRC); drawHist(v.ex.hist, [["--ch-r", 0], ["--ch-g", 1], ["--ch-b", 2]].map(([c, ch]) => ({ h: hist(SRC, ch), color: css(c), mode: "line" }))); }
+  } },
+
+{ id: "negative", group: "intensity", title: "Image negative", pixelwise: true,
+  text: "The negative reverses every intensity with s = 255 − r. Dark becomes bright and bright becomes dark, while mid-grays barely move. In medical images such as mammograms, the reversed version can make small bright details easier to examine.",
+  look: "The curve shows the mapping: input r along the bottom, output s up the side. The histogram is the same shape, flipped left to right.",
+  panes: ["Input · grayscale", "Output"], extras: [["curve", "s = T(r)"], ["hist", "Histogram · before (gray) and after (black)", true]],
+  controls: [],
+  code: () => "«img_neg» = «255|The highest value an 8-bit pixel can hold: L − 1, with L = 256 levels.» «-|Subtracts every pixel from 255, so 0 becomes 255 and 255 becomes 0.» «image»",
+  run(s, v) { const lut = makeLut(r => 255 - r), o = applyLut(GRAY, lut); v.show(0, GRAY); v.show(1, o); drawCurve(v.ex.curve, lut); drawHist(v.ex.hist, [{ h: hist(GRAY), color: css("--faint") }, { h: hist(o), color: css("--fg"), mode: "line" }]); } },
+
+{ id: "brightness", group: "intensity", title: "Brightness and contrast", pixelwise: true,
+  text: "The transform g = α·f + β changes contrast and brightness: α scales the intensities apart, β shifts them all up or down. convertScaleAbs takes the absolute value before clipping to 0–255, so results that go negative come back as positive values instead of black.",
+  look: "The curve is the mapping from input to output. A steeper line means more contrast; a higher line means brighter. Try the three examples from the lab.",
+  panes: ["Input · grayscale", "Output"], extras: [["curve", "s = T(r)"], ["hist", "Histogram · before (gray) and after (black)", true]],
+  controls: [
+    { type: "presets", label: "Examples from the lab", wide: true, items: [["Brighter: α 1, β 100", { a: 1, b: 100 }], ["More contrast: α 2, β 0", { a: 2, b: 0 }], ["Both: α 3, β −200", { a: 3, b: -200 }]] },
+    { type: "range", key: "a", name: "alpha", label: "contrast", tip: "alpha multiplies every pixel. Above 1 spreads the tones apart (more contrast); below 1 squeezes them together.", min: 0, max: 3, step: 0.1, value: 1, fmt: v => v.toFixed(1) },
+    { type: "range", key: "b", name: "beta", label: "brightness", tip: "beta is added to every pixel after scaling. Positive values brighten, negative values darken.", min: -200, max: 200, step: 5, value: 100 },
+  ],
+  code: s => "«new_image» = «cv2.convertScaleAbs»(«image», «alpha=|Contrast factor.»‹a›, «beta=|Brightness offset.»‹b›)",
+  run(s, v) { const lut = makeLut(r => Math.abs(s.a * r + s.b)), o = applyLut(GRAY, lut); v.show(0, GRAY); v.show(1, o); drawCurve(v.ex.curve, lut); drawHist(v.ex.hist, [{ h: hist(GRAY), color: css("--faint") }, { h: hist(o), color: css("--fg"), mode: "line" }]); } },
+
+{ id: "equalize", group: "intensity", title: "Histogram equalization", pixelwise: true,
+  text: "Histogram equalization raises contrast automatically by spreading the intensities across the full 0–255 range. Each level is mapped through the cumulative histogram, which pulls crowded tones apart.",
+  look: "The input is a washed-out copy of the image. Compare the two histograms: the gray one is squeezed into the middle, the black one is spread across the whole range.",
+  panes: ["Input · grayscale", "Output"], extras: [["curve", "s = T(r)"], ["hist", "Histogram · before (gray) and after (black)", true]],
+  controls: [{ type: "chips", key: "src", name: "image", label: "which input", tip: "The image passed in. The washed-out copy only uses values from about 92 to 174, which makes the effect easy to see.", value: "low", options: [["low", "Washed-out copy"], ["orig", "Original grayscale"]] }],
+  code: () => "«new_image» = «cv2.equalizeHist»(‹src›)",
+  codeFmt: { src: v => v === "low" ? "low_contrast" : "image_gray" },
+  run(s, v) {
+    const inp = s.src === "low" ? applyLut(GRAY, makeLut(r => 92 + r * 0.32)) : GRAY, h = hist(inp);
+    let cdf = 0, min = 0; const c = new Float64Array(256); for (let i = 0; i < 256; i++) { cdf += h[i]; c[i] = cdf; if (!min && cdf) min = cdf; }
+    const lut = makeLut(r => Math.round((c[r] - min) * 255 / (N * N - min || 1))), o = applyLut(inp, lut);
+    v.show(0, inp); v.show(1, o); drawCurve(v.ex.curve, lut); drawHist(v.ex.hist, [{ h, color: css("--faint") }, { h: hist(o), color: css("--fg"), mode: "line" }]);
+  } },
+
+{ id: "threshold", group: "intensity", title: "Thresholding", pixelwise: true,
+  text: "Thresholding splits a grayscale image into two levels. Pixels above the threshold get the maximum value and the rest become 0, which is the simplest way to separate an object from its background. TRUNC caps bright pixels at the threshold instead, and Otsu's method picks the threshold for you from the histogram.",
+  look: "The dashed line on the histogram is the threshold. Everything to its right turns white. Pick OTSU to see where the automatic method puts it.",
+  panes: ["Input · grayscale", "Output"], extras: [["hist", "Input histogram and threshold", true]],
+  controls: [
+    { type: "chips", key: "t", name: "type", label: "threshold type", tip: "", value: "BINARY", options: [["BINARY", "BINARY"], ["BINARY_INV", "BINARY_INV"], ["TRUNC", "TRUNC"], ["OTSU", "OTSU"]] },
+    { type: "range", key: "T", name: "thresh", label: "threshold", tip: "thresh: pixels greater than this value pass. Ignored when OTSU is used.", min: 0, max: 255, step: 1, value: 90, disabled: s => s.t === "OTSU" },
+  ],
+  code: s => s.t === "OTSU"
+    ? `«ret», «otsu» = «cv2.threshold»(«image», «0|Ignored: Otsu's method computes its own threshold.», «255|maxval: the value given to pixels above the threshold.», ‹t›)   # ret = ${s._otsu ?? ""}`
+    : "«ret», «new_image» = «cv2.threshold»(«image», ‹T›, «255|maxval: the value given to pixels above the threshold.», ‹t›)",
+  codeFmt: { t: v => "cv2.THRESH_" + v },
+  tipFor: { t: s => ({ BINARY: "THRESH_BINARY: above the threshold becomes 255, everything else 0.", BINARY_INV: "THRESH_BINARY_INV: the reverse, above becomes 0 and everything else 255.", TRUNC: "THRESH_TRUNC: values above the threshold are cut down to it; darker pixels are unchanged.", OTSU: "THRESH_OTSU: picks the threshold that best separates the histogram into two groups, then applies BINARY." })[s.t] },
+  run(s, v) {
+    const h = hist(GRAY), T = s.t === "OTSU" ? (s._otsu = otsu(h)) : s.T;
+    const lut = makeLut(r => s.t === "TRUNC" ? Math.min(r, T) : s.t === "BINARY_INV" ? (r > T ? 0 : 255) : (r > T ? 255 : 0));
+    v.show(0, GRAY); v.show(1, applyLut(GRAY, lut)); drawHist(v.ex.hist, [{ h, color: css("--fg") }], { line: T });
+  } },
+
+/* ---------- geometry ---------- */
+{ id: "scaling", group: "geometry", title: "Scaling", nativeOut: true,
+  text: "Resizing changes how many pixels the image has. Shrinking throws detail away, and enlarging has to invent new pixels by interpolation. Nearest neighbor copies the closest pixel; linear and cubic blend the neighbors for smoother results.",
+  look: "The output is drawn at the same pixel size as the input, so anything wider or taller than 256 is cut off at the frame. Set fx to 4 and compare INTER_NEAREST with INTER_CUBIC.",
+  panes: ["Input", "Output · same pixel size"],
+  controls: [
+    { type: "range", key: "fx", name: "fx", label: "width factor", tip: "fx multiplies the width. 2 doubles it, 0.5 halves it.", min: 0.25, max: 4, step: 0.25, value: 2, fmt: v => v.toFixed(2) },
+    { type: "range", key: "fy", name: "fy", label: "height factor", tip: "fy multiplies the height.", min: 0.25, max: 4, step: 0.25, value: 1, fmt: v => v.toFixed(2) },
+    { type: "chips", key: "i", name: "interpolation", label: "how new pixels are made", tip: "", wide: true, value: "CUBIC", options: [["NEAREST", "INTER_NEAREST"], ["LINEAR", "INTER_LINEAR"], ["CUBIC", "INTER_CUBIC"]] },
+  ],
+  code: s => "«new_image» = «cv2.resize»(«image», «None |dsize. None means the output size is worked out from fx and fy instead.», «fx=»‹fx›, «fy=»‹fy›, «interpolation=»‹i›)",
+  codeFmt: { i: v => "cv2.INTER_" + v, fx: num, fy: num },
+  tipFor: { i: s => ({ NEAREST: "INTER_NEAREST copies the single closest source pixel. Fast, but blocky when enlarging.", LINEAR: "INTER_LINEAR blends the 4 nearest pixels by distance.", CUBIC: "INTER_CUBIC fits a smooth curve through the 16 nearest pixels. Slower, smoothest when enlarging." })[s.i] },
+  run(s, v) { const nw = Math.max(1, Math.round(N * s.fx)), nh = Math.max(1, Math.round(N * s.fy)); v.show(0, SRC); v.show(1, resize(SRC, nw, nh, s.i)); } },
+
+{ id: "translation", group: "geometry", title: "Translation",
+  text: "Translation shifts the image by tx pixels across and ty pixels down. OpenCV writes the shift as a 2 × 3 matrix M and applies it with warpAffine. The area the image leaves behind fills with black, and anything pushed past the edge is cut off.",
+  look: "The matrix below shows M with your values in its last column. Negative values move the image left or up.",
+  panes: ["Input", "Output"], extras: [["matrix", "M"]],
+  controls: [
+    { type: "range", key: "tx", name: "tx", label: "shift right", tip: "tx: horizontal shift in pixels. Positive moves the image right.", min: -128, max: 128, step: 1, value: 60 },
+    { type: "range", key: "ty", name: "ty", label: "shift down", tip: "ty: vertical shift in pixels. Positive moves the image down.", min: -128, max: 128, step: 1, value: 30 },
+  ],
+  code: s => "«M» = «np.float32»([[«1|Row 1 of the identity part: x is kept as it is.», «0|No y in the new x: the image is not sheared or rotated.», ‹tx›], [«0|No x in the new y.», «1|Row 2 of the identity part: y is kept as it is.», ‹ty›]])\n«new_image» = «cv2.warpAffine»(«image», «M», «(cols, rows)»)",
+  run(s, v) { const M = [1, 0, s.tx, 0, 1, s.ty]; v.show(0, SRC); v.show(1, warp(SRC, M, N, N)); renderMatrix(v.ex.matrix, M, 0); } },
+
+{ id: "rotation", group: "geometry", title: "Rotation",
+  text: "getRotationMatrix2D builds the matrix for a rotation about a center point, with an optional scale. Positive angles turn the image counter-clockwise. warpAffine then looks up where each output pixel came from and blends the nearest input pixels.",
+  look: "The corners clip and the uncovered areas turn black. Lower the scale to fit the whole rotated image inside the frame.",
+  panes: ["Input", "Output"], extras: [["matrix", "M"]],
+  controls: [
+    { type: "range", key: "a", name: "angle", label: "degrees", tip: "angle: rotation in degrees. Positive turns counter-clockwise.", min: -180, max: 180, step: 1, value: 45 },
+    { type: "range", key: "sc", name: "scale", label: "zoom", tip: "scale: zoom applied with the rotation. 1 keeps the size; 0.7 makes room for the corners.", min: 0.25, max: 2, step: 0.05, value: 1, fmt: v => v.toFixed(2) },
+  ],
+  code: s => "«M» = «cv2.getRotationMatrix2D»(«center=»(«cols // 2 - 1|x of the center: the middle column.», «rows // 2 - 1|y of the center: the middle row.»), «angle=»‹a›, «scale=»‹sc›)\n«new_image» = «cv2.warpAffine»(«image», «M», «(cols, rows)»)",
+  codeFmt: { sc: num },
+  run(s, v) {
+    const t = s.a * Math.PI / 180, al = s.sc * Math.cos(t), be = s.sc * Math.sin(t), cx = N / 2 - 1, cy = N / 2 - 1;
+    const M = [al, be, (1 - al) * cx - be * cy, -be, al, be * cx + (1 - al) * cy];
+    v.show(0, SRC); v.show(1, warp(SRC, M, N, N)); renderMatrix(v.ex.matrix, M, 3);
+  } },
+
+{ id: "arrays", group: "geometry", title: "Array arithmetic", pixelwise: true,
+  text: "An image is an array, so arithmetic works on every pixel at once. With NumPy's uint8 type, a value past 255 wraps around to 0 instead of stopping at 255, and a value below 0 wraps to 255. Clipping to 0–255 keeps bright areas bright.",
+  look: "With wrap-around, the brightest parts (windows, sun, lane markings) turn dark. Switch to clipping and hover a bright pixel to compare.",
+  panes: ["Input", "Output"],
+  controls: [
+    { type: "chips", key: "op", name: "operation", label: "what to do", tip: "", value: "add", options: [["add", "Add a constant"], ["mul", "Multiply"], ["noise", "Add noise"]] },
+    { type: "chips", key: "ov", name: "overflow", label: "past 0 or 255", tip: "", value: "wrap", options: [["wrap", "uint8 wraps around"], ["clip", "Clip to 0–255"]] },
+    { type: "range", key: "add", name: "value", label: "constant", tip: "The number added to every pixel in every channel.", min: -128, max: 128, step: 1, value: 20, show: s => s.op === "add" },
+    { type: "range", key: "mul", name: "factor", label: "multiplier", tip: "Every pixel is multiplied by this number.", min: 0, max: 10, step: 0.5, value: 1.5, fmt: v => v.toFixed(1), show: s => s.op === "mul" },
+    { type: "range", key: "sig", name: "scale", label: "noise σ", tip: "The standard deviation of the noise: how far a typical random value is from 0.", min: 0, max: 60, step: 1, value: 20, show: s => s.op === "noise" },
+  ],
+  code: s => {
+    const w = s.ov === "wrap";
+    if (s.op === "add") return w ? "«new_image» = «image» «+|Adds the value to every element. With uint8, results past 255 wrap around to 0.» ‹add›" : "«new_image» = «np.clip»(«image»«.astype(int)» + ‹add›, «0|Lower limit: anything below 0 becomes 0.», «255|Upper limit: anything above 255 becomes 255.»)«.astype(np.uint8)»";
+    if (s.op === "mul") return w ? "«new_image» = (‹mul› «*|Multiplies every element.» «image»)«.astype(np.uint8)»" : "«new_image» = «np.clip»(‹mul› * «image», «0|Lower limit.», «255|Upper limit: anything above 255 becomes 255.»)«.astype(np.uint8)»";
+    return "«noise» = «np.random.normal»(«0|The mean of the noise: on average it adds nothing.», ‹sig›, («rows», «cols», «3|One noise value per channel.»))" + (w ? "«.astype(np.uint8)»\n«new_image» = «image» + «noise»" : "\n«new_image» = «np.clip»(«image» + «noise», «0|Lower limit: anything below 0 becomes 0.», «255|Upper limit: anything above 255 becomes 255.»)«.astype(np.uint8)»");
+  },
+  codeFmt: { mul: num },
+  tipFor: { op: () => "Which arithmetic to apply to every pixel.", ov: s => s.ov === "wrap" ? "uint8 arithmetic is modulo 256: 250 + 20 gives 14, and 10 − 20 gives 246." : "np.clip limits results to 0–255: 250 + 20 gives 255, and 10 − 20 gives 0." },
+  run(s, v) {
+    const o = mk(N, N, 3), r = rng(5), w = s.ov === "wrap";
+    for (let i = 0; i < SRC.d.length; i++) {
+      const x = SRC.d[i]; let y;
+      if (s.op === "add") y = x + s.add; else if (s.op === "mul") y = Math.trunc(s.mul * x); else { const n = gaussR(r) * s.sig; y = w ? x + Math.trunc(n) : x + n; }
+      o.d[i] = w ? (((Math.round(y) % 256) + 256) % 256) : y;
+    }
+    v.show(0, SRC); v.show(1, o);
+  } },
+
+{ id: "svd", group: "geometry", title: "Matrix operations: SVD", pixelwise: true,
+  text: "Singular value decomposition writes an image as a sum of simple layers, ordered by how much each contributes. Keeping only the first k layers rebuilds an approximation: a handful capture the large shapes, and later ones add fine detail. It runs here on a 128 × 128 grayscale copy.",
+  look: "The bar chart shows each layer's singular value; the black bars are the ones you kept. Notice how fast they drop: most of the image lives in the first few.",
+  panes: ["Input · 128 × 128", "Rank-k approximation"], extras: [["sigma", "Singular values (log scale), kept in black", true], ["stat", "Numbers stored"]],
+  controls: [{ type: "range", key: "k", name: "k", label: "layers kept", tip: "k: how many layers (singular values) to keep, out of 128.", min: 1, max: 128, step: 1, value: 12 }],
+  code: s => "«U», «s», «V» = «np.linalg.svd»(«image», «full_matrices=True»)\n«S» = «np.diag»(«s»)\n«image_k» = «U»[«:|All rows.», «:|Up to k: the first k columns.»‹k›] «@» «S»[:‹k›, :‹k›] «@» «V»[:‹k›, «:|All columns.»]",
+  run(s, v) {
+    const g = down2(GRAY); if (!SVD) SVD = svdPrep(g);
+    v.show(0, g); v.show(1, svdRecon(SVD, s.k)); drawSigma(v.ex.sigma, SVD.sig, s.k);
+    const kept = s.k * (2 * 128 + 1);
+    v.ex.stat.innerHTML = `${kept.toLocaleString()} numbers <small>vs 16,384 pixels · ${Math.round(kept / 163.84)}%</small>`;
+  } },
+
+/* ---------- filtering ---------- */
+{ id: "mean", group: "filtering", title: "Mean filter", pixelwise: true,
+  text: "A mean filter replaces each pixel with the average of its neighborhood, defined by a kernel of equal weights. Averaging cancels random noise, but it also blurs edges, and a larger kernel does more of both.",
+  look: "Raise the kernel size and watch the noise fade while the window edges soften. The grid shows the kernel: every cell has the same weight.",
+  panes: ["Input + noise", "Filtered"], extras: [["kernel", ""]],
+  controls: [
+    { type: "range", key: "sig", name: "noise σ", label: "noise strength", tip: "The standard deviation of the noise added before filtering.", min: 0, max: 40, step: 1, value: 15 },
+    { type: "range", key: "k", name: "k", label: "kernel size", tip: "The kernel is k × k pixels. Bigger averages over more neighbors.", min: 3, max: 11, step: 2, value: 5, fmt: v => `${v} × ${v}` },
+  ],
+  code: s => `«noise» = «np.random.normal»(«0|The mean of the noise.», ‹sig›, («rows», «cols», «3|One noise value per channel.»))\n«noisy_image» = «image» + «noise»\n«kernel» = «np.ones»((‹k›, ‹k›)) / «${s.k * s.k}|Dividing by the number of weights (k × k) makes them add up to 1, so the overall brightness stays the same.»\n«image_filtered» = «cv2.filter2D»(«src=»«noisy_image», «ddepth=-1», «kernel=»«kernel»)`,
+  run(s, v) { const noisy = addNoise(SRC, s.sig, 3), k = new Array(s.k * s.k).fill(1 / (s.k * s.k)); v.show(0, noisy); v.show(1, fromF(noisy, conv(noisy, k, s.k, s.k))); renderKernels(v.ex.kernel, [{ k, kw: s.k, kh: s.k, dec: 3, label: `Kernel · each weight is 1/${s.k * s.k}` }]); } },
+
+{ id: "gaussian", group: "filtering", title: "Gaussian blur", pixelwise: true,
+  text: "A Gaussian kernel gives near neighbors more weight than distant ones, so it removes noise while blurring edges less than a plain average. Sigma sets how fast the weights fall off from the center, and the kernel size limits how far they reach.",
+  look: "The kernel grid shows the weights: darker cells count more. A small sigma in a big kernel wastes the outer cells; a big sigma in a small kernel gets cut off.",
+  panes: ["Input + noise", "Filtered"], extras: [["kernel", ""]],
+  controls: [
+    { type: "range", key: "k", name: "ksize", label: "kernel size", tip: "ksize: the kernel's width and height. It must be odd.", min: 3, max: 15, step: 2, value: 11, fmt: v => `${v} × ${v}` },
+    { type: "range", key: "sg", name: "sigma", label: "spread", tip: "sigmaX and sigmaY: the standard deviation of the Gaussian. Bigger spreads the weight further and blurs more.", min: 0.5, max: 10, step: 0.5, value: 4, fmt: v => v.toFixed(1) },
+  ],
+  code: s => "«image_filtered» = «cv2.GaussianBlur»(«noisy_image», (‹k›, ‹k›), «sigmaX=»‹sg›, «sigmaY=»‹sg›)",
+  codeFmt: { sg: num },
+  run(s, v) {
+    const noisy = addNoise(SRC, 15, 3), g = gaussKernel(s.k, s.sg), k2 = []; for (let j = 0; j < s.k; j++) for (let i = 0; i < s.k; i++) k2.push(g[j] * g[i]);
+    v.show(0, noisy); v.show(1, fromF(noisy, convSep(noisy, g))); renderKernels(v.ex.kernel, [{ k: k2, kw: s.k, kh: s.k, dec: 3, label: "Kernel weights (darker counts more)" }]);
+  } },
+
+{ id: "sharpen", group: "filtering", title: "Sharpening", pixelwise: true,
+  text: "Sharpening adds the difference between a pixel and its neighbors back into the image, which exaggerates edges and fine texture. The kernel's weights add up to 1, so flat areas keep their brightness.",
+  look: "Hover a window edge to see the values pushed apart. Pillow's SHARPEN uses the same idea with a gentler center weight.",
+  panes: ["Input", "Sharpened"], extras: [["kernel", ""]],
+  controls: [{ type: "chips", key: "k", name: "kernel", label: "which kernel", tip: "", value: "custom", options: [["custom", "Lab kernel (center 9)"], ["pil", "ImageFilter.SHARPEN"]] }],
+  code: s => s.k === "custom"
+    ? "«kernel» = «np.array |Writes the kernel out by hand.»([[«-1|Each neighbor is subtracted once.», -1, -1],\n                   [-1,  «9|The center pixel counts 9 times. 9 − 8 neighbors = 1, so flat areas are unchanged.», -1],\n                   [-1, -1, -1]])\n«sharpened» = «cv2.filter2D»(«image», «-1», «kernel»)"
+    : "«sharpened» = «image»«.filter»(«ImageFilter.SHARPEN»)",
+  tipFor: { k: s => s.k === "custom" ? "The 3 × 3 kernel used in the lab: center 9, all eight neighbors −1." : "Pillow's built-in SHARPEN: center 32, neighbors −2, divided by 16. A milder effect." },
+  run(s, v) { const k = SHARP[s.k]; v.show(0, SRC); v.show(1, fromF(SRC, conv(SRC, k, 3, 3))); renderKernels(v.ex.kernel, [{ k, kw: 3, kh: 3, dec: 3, label: "Kernel" }]); } },
+
+{ id: "sobel", group: "filtering", title: "Edges with Sobel", pixelwise: true,
+  text: "Edges are where intensity changes quickly. The Sobel kernels estimate that change horizontally (dx) and vertically (dy), and combining the two shows edges in every direction.",
+  look: "In the dx and dy views, mid-gray means no change, while white and black mean change in opposite directions. dx picks up the tower's vertical stripes; dy picks up the rooftops and the road.",
+  panes: ["Input · grayscale", "Output"], extras: [["kernel", ""]],
+  controls: [{ type: "chips", key: "d", name: "direction", label: "which gradient", tip: "", value: "mag", options: [["x", "dx = 1"], ["y", "dy = 1"], ["mag", "Combined"]] }],
+  code: s => s.d === "x"
+    ? "«grad_x» = «cv2.Sobel»(«src=»«img_gray», «ddepth=cv2.CV_16S», «dx=1|First derivative across the width: change from left to right.», «dy=0|No derivative down the height.», «ksize=3»)"
+    : s.d === "y"
+    ? "«grad_y» = «cv2.Sobel»(«src=»«img_gray», «ddepth=cv2.CV_16S», «dx=0|No derivative across the width.», «dy=1|First derivative down the height: change from top to bottom.», «ksize=3»)"
+    : "«abs_grad_x» = «cv2.convertScaleAbs»(«grad_x»)\n«abs_grad_y» = «cv2.convertScaleAbs»(«grad_y»)\n«grad» = «cv2.addWeighted»(«abs_grad_x», «0.5», «abs_grad_y», «0.5», «0|gamma: a constant added at the end. 0 adds nothing.»)",
+  tipFor: { d: s => ({ x: "dx = 1: the horizontal gradient, which highlights vertical edges.", y: "dy = 1: the vertical gradient, which highlights horizontal edges.", mag: "Both gradients as absolute values, averaged together." })[s.d] },
+  run(s, v) {
+    const gx = conv(GRAY, SOBX, 3, 3), gy = conv(GRAY, SOBY, 3, 3), o = mk(N, N, 1);
+    if (s.d === "mag") for (let i = 0; i < o.d.length; i++) o.d[i] = Math.round(0.5 * Math.min(255, Math.abs(gx[i])) + 0.5 * Math.min(255, Math.abs(gy[i])));
+    else { const g = s.d === "x" ? gx : gy; let m = 1; for (const val of g) m = Math.max(m, Math.abs(val)); for (let i = 0; i < o.d.length; i++) o.d[i] = 127.5 + 127.5 * g[i] / m; }
+    v.show(0, GRAY); v.show(1, o);
+    renderKernels(v.ex.kernel, s.d === "x" ? [{ k: SOBX, kw: 3, kh: 3, label: "dx kernel" }] : s.d === "y" ? [{ k: SOBY, kw: 3, kh: 3, label: "dy kernel" }] : [{ k: SOBX, kw: 3, kh: 3, label: "dx kernel" }, { k: SOBY, kw: 3, kh: 3, label: "dy kernel" }]);
+  } },
+
+{ id: "median", group: "filtering", title: "Median filter", pixelwise: true,
+  text: "A median filter replaces each pixel with the median of its neighborhood instead of the mean. Isolated black and white specks (salt-and-pepper noise) are outliers, so the median ignores them and edges stay sharp.",
+  look: "The specks vanish while the window edges stay crisp. Switch to the mean filter of the same size: the specks smear into gray blotches instead.",
+  panes: ["Input + salt and pepper", "Filtered"],
+  controls: [
+    { type: "range", key: "amt", name: "noise", label: "share of pixels hit", tip: "The share of pixels set to pure black or white before filtering.", min: 0, max: 30, step: 1, value: 8, fmt: v => v + "%" },
+    { type: "chips", key: "k", name: "ksize", label: "kernel size", tip: "ksize: the neighborhood is ksize × ksize. It must be odd.", value: 5, options: [[3, "3"], [5, "5"], [7, "7"]] },
+    { type: "chips", key: "f", name: "filter", label: "median or mean", tip: "", value: "median", options: [["median", "Median"], ["mean", "Mean, same size"]] },
+  ],
+  code: s => s.f === "median" ? "«filtered_image» = «cv2.medianBlur»(«image», ‹k›)" : "«filtered_image» = «cv2.blur»(«image», (‹k›, ‹k›))",
+  tipFor: { f: s => s.f === "median" ? "medianBlur: the middle value of the neighborhood. Extreme specks never end up in the middle." : "blur: the plain average. Every speck pulls the average up or down." },
+  run(s, v) { const noisy = saltPepper(GRAY, s.amt / 100, 9); v.show(0, noisy); v.show(1, s.f === "median" ? medianFilter(noisy, s.k) : fromF(noisy, conv(noisy, new Array(s.k * s.k).fill(1 / (s.k * s.k)), s.k, s.k))); } },
+];
+
+
+/* ================= Pillow / OpenCV variants ================= */
+Object.assign(TIPS, {
+  "ImageOps.invert": "Pillow function that reverses every intensity: each value v becomes 255 − v.",
+  "Image.open": "Pillow function that loads an image file. Pillow keeps channels in R, G, B order.",
+  "plt.imshow": "Matplotlib function that displays an array. It assumes R, G, B order.",
+  "cv2.imread": "OpenCV function that loads an image file as a NumPy array in B, G, R order.",
+  ".resize": "Pillow method that returns a resized copy. It takes the new size in pixels as (width, height).",
+  "resample=": "How new pixel values are estimated when the grid changes size.",
+  "ImageFilter.Kernel": "Pillow filter built from your own weights. It only accepts 3 × 3 or 5 × 5 kernels.",
+  ".flatten": "Turns the 2-D kernel into a flat list, which is the form ImageFilter.Kernel expects.",
+  "ImageFilter.GaussianBlur": "Pillow's Gaussian blur. It takes a radius and sizes the kernel automatically.",
+  "radius=": "How far the blur reaches. For GaussianBlur it plays the role of sigma.",
+  "ImageFilter.EDGE_ENHANCE": "Pillow's built-in filter that boosts edges so they stand out more before edge detection.",
+  "ImageFilter.FIND_EDGES": "Pillow's built-in edge filter: center 8, all neighbors −1. Flat areas become black, edges bright.",
+  "ImageFilter.MedianFilter": "Pillow's median filter: each pixel becomes the median of a size × size neighborhood.",
+  "size=": "The neighborhood is size × size pixels. It must be odd.",
+  "ImageFilter.BoxBlur": "Pillow's mean filter: the average of a square box of neighbors.",
+  "cv2.rectangle": "OpenCV function that draws a rectangle directly into the array.",
+  "pt1=": "The top-left corner as (x, y).",
+  "pt2=": "The bottom-right corner as (x, y).",
+  "Image.fromarray": "Converts a NumPy array back into a Pillow image.",
+});
+const RESAMPLE = { NEAREST: "NEAREST", LINEAR: "BILINEAR", CUBIC: "BICUBIC" };
+const PIL_EE = [-1, -1, -1, -1, 10, -1, -1, -1, -1].map(v => v / 2), PIL_FE = [-1, -1, -1, -1, 8, -1, -1, -1, -1];
+const noiseLines = "«noise» = «np.random.normal»(«0|The mean of the noise.», ‹sig›, («rows», «cols», «3|One noise value per channel.»))\n«noisy_image» = «image» + «noise»\n";
+const isPil = s => s.lib === "pil";
+
+const OVERRIDES = {
+  grayscale: { libs: true,
+    code: s => s.w === "avg"
+      ? (isPil(s) ? "«image_gray» = «np.array»(«image»)«.mean»(«axis=2»)«.astype(np.uint8)»   # equal weights, for comparison" : "«image_gray» = «image»«.mean»(«axis=2»)«.astype(np.uint8)»   # equal weights, for comparison")
+      : (isPil(s) ? "«image_gray» = «ImageOps.grayscale»(«image»)" : "«image_gray» = «cv2.cvtColor»(«image», «cv2.COLOR_BGR2GRAY»)") },
+
+  channels: { libs: true,
+    code: s => {
+      const pil = isPil(s);
+      if (s.ch === "bgr") return pil
+        ? "«image» = «Image.open»(«\"image.png\"|The file to load.»)\n«plt.imshow»(«image»)   # Pillow keeps R, G, B order, so the colors are correct"
+        : "«image» = «cv2.imread»(«\"image.png\"|The file to load.»)\n«plt.imshow»(«image»)   # still B, G, R, so red and blue appear swapped";
+      const order = pil ? ["red", "green", "blue"] : ["blue", "green", "red"], keep = order.indexOf(s.ch);
+      const name = `image_${s.ch}`, nt = `A copy that will keep only the ${s.ch} channel.`;
+      const lines = [pil ? `«${name}|${nt}» = «np.array»(«image»)` : `«${name}|${nt}» = «image»«.copy»()`];
+      [0, 1, 2].filter(c => c !== keep).forEach(c => lines.push(`«${name}|${nt}»«[:, :, ${c}]|Every row, every column, channel ${c}. In ${pil ? "Pillow's R, G, B" : "OpenCV's B, G, R"} order that is ${order[c]}.» = «0|Setting the whole channel to 0 removes that color.»   # ${order[c]}`));
+      return lines.join("\n");
+    },
+    run(s, v) {
+      const o = clone(SRC);
+      if (!(s.ch === "bgr" && isPil(s))) for (let p = 0; p < N * N; p++) { const j = p * 3; if (s.ch === "bgr") { o.d[j] = SRC.d[j + 2]; o.d[j + 2] = SRC.d[j]; } else { const keep = { red: 0, green: 1, blue: 2 }[s.ch]; for (let c = 0; c < 3; c++) if (c !== keep) o.d[j + c] = 0; } }
+      v.show(0, SRC); v.show(1, o);
+    } },
+
+  flip: { libs: true,
+    code: s => isPil(s) ? "«new_image» = «image»«.transpose»(‹t›)" : `«new_image» = ${FLIPS[s.t].cv}   # ‹t›`,
+    codeFmt: { t: (v, s) => isPil(s) ? "Image." + v : v } },
+
+  crop: { libs: true,
+    code: s => isPil(s) ? "«crop» = «image»«.crop»((‹l›, ‹u›, ‹r›, ‹lo›))   # (left, upper, right, lower)" : "«crop» = «image»[‹u›:‹lo›, ‹l›:‹r›]   # rows first, then columns" },
+
+  "pixels-edit": { libs: true,
+    code: s => {
+      const pil = isPil(s);
+      if (s.m === "zero") return pil
+        ? "«array_sq» = «np.array»(«image»)\n«array_sq»[‹u›:‹lo›, ‹l›:‹r›, «1:3|Channels 1 and 2: green and blue in Pillow's R, G, B order, so only red is left.»] = «0|Writes 0 into those channels for every pixel in the box.»"
+        : "«array_sq» = «image»«.copy»()\n«array_sq»[‹u›:‹lo›, ‹l›:‹r›, «0:2|Channels 0 and 1: blue and green in OpenCV's B, G, R order, so only red is left.»] = «0|Writes 0 into those channels for every pixel in the box.»";
+      if (s.m === "rect") return pil
+        ? "«image_draw» = «image»«.copy»()\n«ImageDraw.Draw»(«im=»«image_draw»)«.rectangle»(«xy=»[‹l›, ‹u›, ‹r›, ‹lo›], «fill=\"red\"»)"
+        : "«image_draw» = «image»«.copy»()\n«cv2.rectangle»(«image_draw», «pt1=»(‹l›, ‹u›), «pt2=»(‹r›, ‹lo›), «color=(0, 0, 255)|Red, written in B, G, R order.», «thickness=-1|A negative thickness fills the rectangle instead of drawing only its outline.»)";
+      return pil
+        ? "«crop» = «image»«.crop»((‹l›, ‹u›, ‹r›, ‹lo›))«.transpose»(«Image.FLIP_LEFT_RIGHT»)\n«new_image» = «image»«.copy»()\n«new_image»«.paste»(«crop», «box=»(‹l›, ‹u›))"
+        : "«new_image» = «image»«.copy»()\n«new_image»[‹u›:‹lo›, ‹l›:‹r›] = «image»[‹u›:‹lo›, ‹l›:‹r›]«[:, ::-1]|Reverses the column order, which mirrors the crop left to right.»";
+    } },
+
+  negative: { libs: true,
+    code: s => isPil(s) ? "«img_neg» = «ImageOps.invert»(«image»)" : "«img_neg» = «255|The highest value an 8-bit pixel can hold: L − 1, with L = 256 levels.» «-|Subtracts every pixel from 255, so 0 becomes 255 and 255 becomes 0.» «image»" },
+
+  scaling: { libs: true,
+    controls: [
+      { type: "range", key: "fx", name: "fx", label: "width factor", tip: "fx multiplies the width. 2 doubles it, 0.5 halves it.", min: 0.25, max: 4, step: 0.25, value: 2, fmt: v => v.toFixed(2) },
+      { type: "range", key: "fy", name: "fy", label: "height factor", tip: "fy multiplies the height.", min: 0.25, max: 4, step: 0.25, value: 1, fmt: v => v.toFixed(2) },
+      { type: "chips", key: "i", name: "interpolation", label: "how new pixels are made", tip: "", wide: true, value: "CUBIC", options: [["NEAREST", "Nearest"], ["LINEAR", "Linear"], ["CUBIC", "Cubic"]] },
+    ],
+    code: s => {
+      const nw = Math.max(1, Math.round(N * s.fx)), nh = Math.max(1, Math.round(N * s.fy));
+      return isPil(s)
+        ? `«new_image» = «image»«.resize»((«${nw}|New width in pixels. Pillow takes sizes, not factors: 256 × fx = ${nw}.», «${nh}|New height in pixels: 256 × fy = ${nh}.»), «resample=»‹i›)`
+        : "«new_image» = «cv2.resize»(«image», «None |dsize. None means the output size is worked out from fx and fy instead.», «fx=»‹fx›, «fy=»‹fy›, «interpolation=»‹i›)";
+    },
+    codeFmt: { i: (v, s) => isPil(s) ? "Image." + RESAMPLE[v] : "cv2.INTER_" + v, fx: num, fy: num },
+    tipFor: { i: s => { const n = isPil(s) ? "Image." + RESAMPLE[s.i] : "cv2.INTER_" + s.i; return n + ({ NEAREST: " copies the single closest source pixel. Fast, but blocky when enlarging.", LINEAR: " blends the 4 nearest pixels by distance.", CUBIC: " fits a smooth curve through the 16 nearest pixels. Slower, smoothest when enlarging." })[s.i]; } } },
+
+  rotation: { libs: true,
+    controls: [
+      { type: "range", key: "a", name: "angle", label: "degrees", tip: "angle: rotation in degrees. Positive turns counter-clockwise.", min: -180, max: 180, step: 1, value: 45 },
+      { type: "range", key: "sc", name: "scale", label: "zoom", tip: "scale: zoom applied with the rotation. 1 keeps the size; 0.7 makes room for the corners.", min: 0.25, max: 2, step: 0.05, value: 1, fmt: v => v.toFixed(2), show: s => !isPil(s) },
+    ],
+    look: "The corners clip and the uncovered areas turn black. In OpenCV, lower the scale to fit the whole rotated image inside the frame; Pillow's rotate() has no scale, but rotate(angle, expand=True) grows the canvas instead.",
+    code: s => isPil(s) ? "«new_image» = «image»«.rotate»(‹a›)" : "«M» = «cv2.getRotationMatrix2D»(«center=»(«cols // 2 - 1|x of the center: the middle column.», «rows // 2 - 1|y of the center: the middle row.»), «angle=»‹a›, «scale=»‹sc›)\n«new_image» = «cv2.warpAffine»(«image», «M», «(cols, rows)»)",
+    run(s, v) {
+      const sc = isPil(s) ? 1 : s.sc, t = s.a * Math.PI / 180, al = sc * Math.cos(t), be = sc * Math.sin(t), cx = isPil(s) ? N / 2 : N / 2 - 1, cy = cx;
+      const M = [al, be, (1 - al) * cx - be * cy, -be, al, be * cx + (1 - al) * cy];
+      v.show(0, SRC); v.show(1, warp(SRC, M, N, N)); renderMatrix(v.ex.matrix, M, 3);
+    } },
+
+  mean: { libs: true,
+    controls: [
+      { type: "range", key: "sig", name: "noise σ", label: "noise strength", tip: "The standard deviation of the noise added before filtering.", min: 0, max: 40, step: 1, value: 15 },
+      { type: "range", key: "k", name: "k", label: "kernel size", tip: "The kernel is k × k pixels. Bigger averages over more neighbors.", min: 3, max: 11, step: 2, value: 5, fmt: v => `${v} × ${v}`, show: s => !isPil(s) },
+      { type: "chips", key: "kp", name: "k", label: "kernel size", tip: "Pillow's ImageFilter.Kernel only accepts 3 × 3 or 5 × 5 kernels.", value: 5, options: [[3, "3 × 3"], [5, "5 × 5"]], show: s => isPil(s) },
+    ],
+    code: s => { const k = isPil(s) ? s.kp : s.k, key = isPil(s) ? "kp" : "k"; return noiseLines + `«kernel» = «np.ones»((‹${key}›, ‹${key}›)) / «${k * k}|Dividing by the number of weights (k × k) makes them add up to 1, so the overall brightness stays the same.»\n` + (isPil(s) ? `«image_filtered» = «noisy_image»«.filter»(«ImageFilter.Kernel»((‹kp›, ‹kp›), «kernel»«.flatten»()))` : "«image_filtered» = «cv2.filter2D»(«src=»«noisy_image», «ddepth=-1», «kernel=»«kernel»)"); },
+    run(s, v) { const kk = isPil(s) ? s.kp : s.k, noisy = addNoise(SRC, s.sig, 3), k = new Array(kk * kk).fill(1 / (kk * kk)); v.show(0, noisy); v.show(1, fromF(noisy, conv(noisy, k, kk, kk))); renderKernels(v.ex.kernel, [{ k, kw: kk, kh: kk, dec: 3, label: `Kernel · each weight is 1/${kk * kk}` }]); } },
+
+  gaussian: { libs: true,
+    controls: [
+      { type: "range", key: "k", name: "ksize", label: "kernel size", tip: "ksize: the kernel's width and height. It must be odd.", min: 3, max: 15, step: 2, value: 11, fmt: v => `${v} × ${v}`, show: s => !isPil(s) },
+      { type: "range", key: "sg", name: "sigma", label: "spread", tip: "The standard deviation of the Gaussian. Bigger spreads the weight further and blurs more. Pillow calls it radius.", min: 0.5, max: 10, step: 0.5, value: 4, fmt: v => v.toFixed(1) },
+    ],
+    code: s => isPil(s) ? "«image_filtered» = «noisy_image»«.filter»(«ImageFilter.GaussianBlur»(«radius=»‹sg›))" : "«image_filtered» = «cv2.GaussianBlur»(«noisy_image», (‹k›, ‹k›), «sigmaX=»‹sg›, «sigmaY=»‹sg›)",
+    run(s, v) {
+      const k = isPil(s) ? 2 * Math.ceil(3 * s.sg) + 1 : s.k, noisy = addNoise(SRC, 15, 3), g = gaussKernel(k, s.sg);
+      v.show(0, noisy); v.show(1, fromF(noisy, convSep(noisy, g)));
+      if (k <= 15) { const k2 = []; for (let j = 0; j < k; j++) for (let i = 0; i < k; i++) k2.push(g[j] * g[i]); renderKernels(v.ex.kernel, [{ k: k2, kw: k, kh: k, dec: 3, label: isPil(s) ? `Kernel Pillow builds for radius ${s.sg} (${k} × ${k})` : "Kernel weights (darker counts more)" }]); }
+      else v.ex.kernel.innerHTML = `<p class="hint">Pillow sizes the kernel from the radius: about 6 × radius, here ${k} × ${k}. Too large to draw as a grid.</p>`;
+    } },
+
+  sharpen: { libs: true,
+    controls: [{ type: "chips", key: "k", name: "kernel", label: "which kernel", tip: "", value: "custom", options: [["custom", "Lab kernel"], ["pil", "ImageFilter.SHARPEN"]], show: s => isPil(s) }],
+    code: s => !isPil(s)
+      ? "«kernel» = «np.array |Writes the kernel out by hand.»([[«-1|Each neighbor is subtracted once.», -1, -1],\n                   [-1,  «9|The center pixel counts 9 times. 9 − 8 neighbors = 1, so flat areas are unchanged.», -1],\n                   [-1, -1, -1]])\n«sharpened» = «cv2.filter2D»(«image», «-1», «kernel»)"
+      : s.k === "custom"
+      ? "«kernel» = «ImageFilter.Kernel»((3, 3), [«-1|Each neighbor is subtracted once.», -1, -1,\n                                   -1,  «9|The center pixel counts 9 times. 9 − 8 neighbors = 1, so flat areas are unchanged.», -1,\n                                   -1, -1, -1])\n«sharpened» = «image»«.filter»(«kernel»)"
+      : "«sharpened» = «image»«.filter»(«ImageFilter.SHARPEN»)",
+    run(s, v) { const k = isPil(s) ? SHARP[s.k] : SHARP.custom; v.show(0, SRC); v.show(1, fromF(SRC, conv(SRC, k, 3, 3))); renderKernels(v.ex.kernel, [{ k, kw: 3, kh: 3, dec: 3, label: "Kernel" }]); } },
+
+  sobel: { libs: true,
+    look: "With OpenCV, the dx and dy views show mid-gray for no change, and white or black for change in opposite directions. Pillow's FIND_EDGES has no direction: every edge comes out bright on black.",
+    controls: [{ type: "chips", key: "d", name: "direction", label: "which gradient", tip: "", value: "mag", options: [["x", "dx = 1"], ["y", "dy = 1"], ["mag", "Combined"]], show: s => !isPil(s) }],
+    code: s => isPil(s) ? "«img_gray» = «img_gray»«.filter»(«ImageFilter.EDGE_ENHANCE»)\n«img_gray» = «img_gray»«.filter»(«ImageFilter.FIND_EDGES»)" : OPS.find(o => o.id === "sobel")._cvCode(s),
+    run(s, v) {
+      if (!isPil(s)) return OPS.find(o => o.id === "sobel")._cvRun(s, v);
+      const ee = fromF(GRAY, conv(GRAY, PIL_EE, 3, 3)), fe = fromF(ee, conv(ee, PIL_FE, 3, 3));
+      v.show(0, GRAY); v.show(1, fe);
+      renderKernels(v.ex.kernel, [{ k: PIL_EE, kw: 3, kh: 3, dec: 1, label: "EDGE_ENHANCE" }, { k: PIL_FE, kw: 3, kh: 3, label: "FIND_EDGES" }]);
+    } },
+
+  median: { libs: true,
+    code: s => isPil(s)
+      ? (s.f === "median" ? "«filtered_image» = «image»«.filter»(«ImageFilter.MedianFilter»(«size=»‹k›))" : `«filtered_image» = «image»«.filter»(«ImageFilter.BoxBlur»(«radius=»«${(s.k - 1) / 2}|BoxBlur takes a radius: a ${s.k} × ${s.k} box has radius ${(s.k - 1) / 2}.»))`)
+      : (s.f === "median" ? "«filtered_image» = «cv2.medianBlur»(«image», ‹k›)" : "«filtered_image» = «cv2.blur»(«image», (‹k›, ‹k›))") },
+};
+const LIB_LABEL = { quantize: "Pillow", copy: "NumPy", histogram: "OpenCV", brightness: "OpenCV", equalize: "OpenCV", threshold: "OpenCV", translation: "OpenCV", arrays: "NumPy", svd: "NumPy" };
+{ const sob = OPS.find(o => o.id === "sobel"); sob._cvCode = sob.code; sob._cvRun = sob.run; }
+OPS.forEach(op => { if (OVERRIDES[op.id]) Object.assign(op, OVERRIDES[op.id]); op.libLabel = LIB_LABEL[op.id] || "Python"; });
+
+Object.assign(OPS.find(o => o.id === "copy"), {
+  controls: [{ type: "chips", key: "mode", name: "B", label: "how B is made", tip: "B = A gives a second name for the same array. B = A.copy() makes a separate array.", value: "alias", options: [["alias", "B = A"], ["copy", "B = A.copy()"]] }],
+  look: "The image panel now shows A and B side by side. Run the cell below: it adds one line that sets every pixel of A to zero. Then look at B. Did it go black too? Try again with B = A.copy() in step 2.",
+  code: s => `«A» = «np.array»(«image»)\n«B» = ‹mode›\n«id»(«A») == «id»(«B»)   # ${s.mode === "alias" ? "True: one array, two names" : "False: two separate arrays"}`,
+  code3: s => `«A» = «np.array»(«image»)\n«B» = ‹mode›\n«A[:, :, :] = 0|Sets every pixel in every channel of A to 0 (black).»\n«id»(«A») == «id»(«B»)   # ${s.mode === "alias" ? "True" : "False"}`,
+  run3: s => { s.zeroed = true; },
+  reset3: s => { s.zeroed = false; },
+  waitMsg: "B still shows the original image",
+  ranMsg: s => s.mode === "alias" ? "A is all zeros, and so is B: they are the same array" : "A is all zeros, B kept its pixels: it is a copy",
+});
+
+/* ================= app ================= */
+const $ = id => document.getElementById(id);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+const ICON = {
+  arrowR: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M11 3.5 10 4.5l4.8 4.8H2v1.4h12.8L10 15.5l1 1 6.5-6.5z"/></svg>',
+  arrowL: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M9 3.5l1 1-4.8 4.8H18v1.4H5.2l4.8 4.8-1 1L2.5 10z"/></svg>',
+  arrowD: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M16.5 11l-1-1-4.8 4.8V2H9.3v12.8L4.5 10l-1 1 6.5 6.5z"/></svg>',
+  play: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.5 3.2v13.6L17 10z"/></svg>',
+  info: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 1.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zm.9 13.25H9.1V8.5h1.8zM10 7.2a1.1 1.1 0 1 1 0-2.2 1.1 1.1 0 0 1 0 2.2z"/></svg>',
+  check: '<svg class="i chk" viewBox="0 0 20 20" aria-hidden="true"><path d="M8 13.6 4.4 10l-1 1L8 15.6l9-9-1-1z"/></svg>',
+  reset: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M10.6 2.5a7.5 7.5 0 1 1-7.42 8.6l1.48-.22A6 6 0 1 0 6 5.9h2.5v1.5h-5v-5H5v2.25A7.48 7.48 0 0 1 10.6 2.5z"/></svg>',
+  chevD: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13.2 4.3 7.5l1-1L10 11.2l4.7-4.7 1 1z"/></svg>',
+  done: '<svg viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 1a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 1.5a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15z"/><path d="M8.75 12.6 6.2 10.05l-1 1 3.55 3.55 6.05-6.05-1-1z"/></svg>',
+  current: '<svg viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M10 1a9 9 0 1 0 0 18 9 9 0 0 0 0-18zm0 1.5a7.5 7.5 0 1 1 0 15 7.5 7.5 0 0 1 0-15z"/><circle cx="10" cy="10" r="4.25"/></svg>',
+  moon: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><path d="M8.2 2.1a8 8 0 1 0 9.7 9.7 6.6 6.6 0 0 1-9.7-9.7z"/></svg>',
+  sun: '<svg class="i" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.6"/><path d="M9.25 1h1.5v3h-1.5zM9.25 16h1.5v3h-1.5zM1 9.25h3v1.5H1zM16 9.25h3v1.5h-3z"/><g transform="rotate(45 10 10)"><path d="M9.25 1h1.5v3h-1.5zM9.25 16h1.5v3h-1.5zM1 9.25h3v1.5H1zM16 9.25h3v1.5h-3z"/></g></svg>',
+};
+let EXEC = 0, SRC, GRAY, SVD = null, cur = null, LIB = store.get("pixelops-lib") === "cv" ? "cv" : "pil";
+
+OPS.forEach(op => {
+  op.s = {}; op.step = 1; op.byKey = {};
+  op.controls.forEach(c => { if ("key" in c && !(c.key in op.s)) { op.s[c.key] = c.value; op.byKey[c.key] = c; } else if ("key" in c) op.byKey[c.key + "@" + c.name] = c; });
+  op.defaults = { ...op.s };
+});
+const groupOf = op => GROUPS.find(g => g.id === op.group);
+const ctlFor = (op, key) => op.controls.find(c => c.key === key && (!c.show || c.show(op.s))) || op.byKey[key];
+
+/* ---------- theme ---------- */
+const sysDark = matchMedia("(prefers-color-scheme: dark)");
+function effectiveDark() { const t = document.documentElement.getAttribute("data-theme"); return t ? t === "dark" : sysDark.matches; }
+function paintThemeBtn() { const dark = effectiveDark(), b = $("themeBtn"); b.innerHTML = dark ? ICON.sun : ICON.moon; b.setAttribute("aria-label", dark ? "Switch to the light theme" : "Switch to the dark theme"); b.title = b.getAttribute("aria-label"); }
+{ const saved = store.get("pixelops-theme"); if (saved === "light" || saved === "dark") document.documentElement.setAttribute("data-theme", saved); }
+function startOver(op) { hideTip(); resetOp(op); op.step = 1; op.ran2 = op.ran3 = 0; open(op); }
+$("pageReset").innerHTML = ICON.reset;
+$("pageReset").addEventListener("click", () => cur && startOver(cur));
+[["pointerenter", 1], ["focus", 1], ["pointerleave", 0], ["blur", 0]].forEach(([ev, on]) => $("pageReset").addEventListener(ev, () => on ? showTip($("pageReset"), "<span>Start this page over: back to step 1 with the lab's original values</span>") : hideTip(60)));
+$("themeBtn").addEventListener("click", () => { const next = effectiveDark() ? "light" : "dark"; document.documentElement.setAttribute("data-theme", next); store.set("pixelops-theme", next); });
+
+/* ---------- side nav ---------- */
+GROUPS.forEach(g => {
+  const box = el("div", "nav-group"), cat = el("div", "nav-cat"); cat.append(el("h2", "", esc(g.title)), el("span", "", esc(g.lab))); box.appendChild(cat);
+  const ol = el("ol");
+  OPS.filter(o => o.group === g.id).forEach(o => { const li = el("li"), a = el("a", "", `<span>${esc(o.title)}</span>${ICON.check}`); a.href = "#" + o.id; li.appendChild(a); ol.appendChild(li); o.menuLink = a; });
+  box.appendChild(ol); $("navList").appendChild(box);
+});
+const setMenu = open => { $("nav").classList.toggle("open", open); $("overlay").classList.toggle("open", open); $("menuBtn").setAttribute("aria-expanded", open); };
+$("menuBtn").addEventListener("click", () => setMenu(!$("nav").classList.contains("open")));
+$("overlay").addEventListener("click", () => setMenu(false));
+$("nav").addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
+addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+
+/* ---------- code rendering ---------- */
+function fmtParam(op, key) { const v = op.s[key]; return op.codeFmt && op.codeFmt[key] ? op.codeFmt[key](v, op.s) : String(v); }
+function tipParam(op, key) { const c = ctlFor(op, key); return op.tipFor && op.tipFor[key] ? op.tipFor[key](op.s) : (c && c.tip) || ""; }
+function renderCode(pre, op, ro) {
+  const tpl = ro && op.code3 ? op.code3(op.s) : op.code(op.s); pre.textContent = "";
+  const re = /«([^»|]*)(?:\|([^»]*))?»|‹(\w+)›/g;
+  tpl.split("\n").forEach((line, li) => {
+    if (li) pre.append("\n");
+    let last = 0, inC = false;
+    const plain = t => { if (!t) return; if (inC) { pre.appendChild(el("span", "cm")).textContent = t; return; } const k = t.indexOf("#"); if (k < 0) { pre.append(t); return; } pre.append(t.slice(0, k)); inC = true; pre.appendChild(el("span", "cm")).textContent = t.slice(k); };
+    line.replace(re, (m, text, tip, key, off) => {
+      plain(line.slice(last, off)); last = off + m.length;
+      let sp;
+      if (key) { pre.appendChild(paramField(op, key, inC)); return m; }
+      else { const t = tip ?? TIPS[text] ?? TIPS[text.trim()]; sp = el("span", t ? "tk" : ""); sp.textContent = text.replace(/ +$/, ""); if (t) { sp.dataset.tip = t; sp.setAttribute("role", "button"); } }
+      if (inC) sp.classList.add("cm");
+      if (sp.classList.contains("tk") || sp.classList.contains("pm")) sp.tabIndex = 0;
+      pre.appendChild(sp); return m;
+    });
+    plain(line.slice(last));
+  });
+  if (op.hlKey) highlight(op.hlKey);
+}
+/* ---------- editable parameter fields inside the code ---------- */
+function validate(c, text) {
+  const t = String(text).trim(), v = Number(t), f = x => c.fmt ? c.fmt(x).replace(/ × \d+$/, "").replace("%", "") : String(x);
+  const odd = c.step === 2 && c.min % 2 === 1, whole = c.step >= 1;
+  const msg = `Enter ${odd ? "an odd" : whole ? "a whole" : "a"} number from ${f(c.min)} to ${f(c.max)}.`;
+  if (t === "" || !isFinite(v) || v < c.min || v > c.max) return { ok: false, msg };
+  if (whole && (!Number.isInteger(v) || (v - c.min) % c.step !== 0)) return { ok: false, msg };
+  return { ok: true, v };
+}
+function paramTipHtml(op, key, err, ro) {
+  const c = ctlFor(op, key) || {};
+  const how = ro ? "To change it, edit the code in step 2." : c.type === "range" ? `Click and type a new value, from ${esc(c.fmt ? c.fmt(c.min) : c.min)} to ${esc(c.fmt ? c.fmt(c.max) : c.max)}.` : "Click to pick another value.";
+  return `<span class="k">${esc(c.name || key)} = ${esc(fmtParam(op, key))}</span><span>${esc(tipParam(op, key) || c.label || "")}</span>` + (err ? `<span class="err">${esc(err)}</span>` : `<span class="note">${how}</span>`);
+}
+function paramField(op, key, inComment) {
+  const c = ctlFor(op, key), wrap = el("span", "pm" + (inComment ? " cm" : "")); wrap.dataset.key = key;
+  if (c && c.type === "range") {
+    const inp = el("input", "pm-in"); inp.type = "text"; inp.value = fmtParam(op, key); inp.dataset.key = key;
+    inp.inputMode = c.step >= 1 && c.min >= 0 ? "numeric" : "decimal"; inp.spellcheck = false; inp.autocomplete = "off";
+    inp.setAttribute("aria-label", `${c.name || key}, ${c.label}`);
+    const size = () => { inp.style.width = `calc(${Math.max(1, inp.value.length)}ch + 15px)`; }; size();
+    inp.addEventListener("input", () => {
+      size(); const r = validate(c, inp.value);
+      wrap.classList.toggle("bad", !r.ok); inp.setAttribute("aria-invalid", !r.ok);
+      if (r.ok) { op.s[key] = r.v; update(op, true, inp); }
+      showTip(inp, paramTipHtml(op, key, r.ok ? null : r.msg));
+    });
+    const commit = () => { if (wrap.classList.contains("bad")) { wrap.classList.remove("bad"); } hideTip(); update(op, true); };
+    inp.addEventListener("change", commit);
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } if (e.key === "Escape") { inp.value = fmtParam(op, key); wrap.classList.remove("bad"); inp.blur(); } });
+    inp.addEventListener("blur", () => { if (wrap.classList.contains("bad")) { wrap.classList.remove("bad"); update(op, true); } });
+    wrap.appendChild(inp);
+  } else if (c) {
+    const sel = el("select", "pm-sel"); sel.dataset.key = key; sel.setAttribute("aria-label", `${c.name || key}, ${c.label}`);
+    c.options.forEach(([val]) => { const o = el("option"); o.value = String(val); o.textContent = op.codeFmt && op.codeFmt[key] ? op.codeFmt[key](val, op.s) : String(val); sel.appendChild(o); });
+    sel.value = String(op.s[key]);
+    const fit = () => { sel.style.width = `calc(${sel.options[sel.selectedIndex].textContent.length}ch + 30px)`; }; fit();
+    sel.addEventListener("change", () => { const host = sel.closest("pre"), opt = c.options.find(([v]) => String(v) === sel.value); op.s[key] = opt[0]; hideTip(); update(op, true); const again = host && host.querySelector(`.pm-sel[data-key="${key}"]`); again && again.focus(); });
+    wrap.appendChild(sel); wrap.insertAdjacentHTML("beforeend", '<svg class="i chev" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 13.2 4.3 7.5l1-1L10 11.2l4.7-4.7 1 1z"/></svg>');
+  } else wrap.textContent = fmtParam(op, key);
+  return wrap;
+}
+
+/* ---------- Carbon tooltip ---------- */
+const tipEl = el("div", "tip"); tipEl.id = "tip"; tipEl.setAttribute("role", "tooltip"); tipEl.hidden = true; document.body.appendChild(tipEl);
+let tipFor = null, tipTimer = 0;
+function showTip(target, html) {
+  clearTimeout(tipTimer);
+  if (tipFor && tipFor !== target) tipFor.removeAttribute("aria-describedby");
+  tipEl.innerHTML = html + '<span class="caret" aria-hidden="true"></span>'; tipEl.hidden = false; tipFor = target; target.setAttribute("aria-describedby", "tip");
+  const r = target.getBoundingClientRect(), tw = tipEl.offsetWidth, th = tipEl.offsetHeight, top = 48 + (parseFloat(getComputedStyle(document.body, "::before").height) || 0);
+  let x = Math.max(8, Math.min(r.left + r.width / 2 - tw / 2, innerWidth - tw - 8));
+  const above = r.top - th - 10 > top; const y = above ? r.top - th - 10 : r.bottom + 10;
+  tipEl.style.left = x + "px"; tipEl.style.top = y + "px"; tipEl.classList.toggle("below", !above);
+  tipEl.style.setProperty("--cx", Math.max(10, Math.min(r.left + r.width / 2 - x, tw - 10)) + "px");
+}
+function hideTip(delay) { clearTimeout(tipTimer); tipTimer = setTimeout(() => { tipEl.hidden = true; if (tipFor) tipFor.removeAttribute("aria-describedby"); tipFor = null; }, delay || 0); }
+addEventListener("scroll", () => { if (tipFor && !tipFor.matches(":focus")) hideTip(); }, true);
+document.addEventListener("pointerdown", e => { if (tipFor && !e.target.closest(".code, .tbtn")) hideTip(); });
+function tipHtmlFor(t) {
+  if (t.classList.contains("pm")) return paramTipHtml(cur, t.dataset.key, null, t.classList.contains("ro"));
+  return `<span class="k">${esc(t.textContent)}</span><span>${esc(t.dataset.tip)}</span>`;
+}
+function highlight(key) {
+  if (!cur || !cur.dom) return; cur.hlKey = key;
+  cur.dom.code.querySelectorAll(".pm").forEach(p => p.classList.toggle("hl", p.dataset.key === key));
+  cur.dom.card.querySelectorAll(".ctl").forEach(c => c.classList.toggle("hl", !!key && c.dataset.key === key));
+}
+
+/* ---------- controls (Carbon slider, content switcher, select) ---------- */
+function buildControls(op, where) {
+  const wrap = el("div", "params" + (where === "output" ? " bare" : "")), ui = [];
+  op.controls.filter(c => (c.where || "code") === where).forEach((c, ci) => {
+    const wide = c.wide || (c.type === "chips" && c.options.reduce((n, o) => n + String(o[1]).length, 0) > 26);
+    const box = el("div", "ctl" + (wide ? " wide" : "")); if (c.key) box.dataset.key = c.key;
+    const id = `${op.id}-${c.key || "b" + ci}-${ci}`;
+    const lab = el("label", "lbl"); lab.htmlFor = id;
+    lab.innerHTML = c.name ? `<code>${esc(c.name)}</code> · ${esc(c.label)}` : esc(c.label);
+    box.appendChild(lab);
+    if (c.type === "range") {
+      const row = el("div", "slider"), r = el("input"), out = el("output");
+      Object.assign(r, { type: "range", id, min: c.min, max: c.max, step: c.step });
+      const fmt = v => c.fmt ? c.fmt(v) : String(v);
+      row.append(el("span", "mm", esc(fmt(c.min))), r, el("span", "mm", esc(fmt(c.max))), out); out.htmlFor = id;
+      r.addEventListener("input", () => { op.s[c.key] = +r.value; update(op); });
+      box.appendChild(row);
+      ui.push({ c, box, sync: () => { r.value = op.s[c.key]; out.textContent = fmt(op.s[c.key]); r.style.setProperty("--p", ((op.s[c.key] - c.min) / (c.max - c.min) * 100) + "%"); r.disabled = c.disabled ? c.disabled(op.s) : false; } });
+    } else if (c.type === "chips" && c.options.length > 4) {
+      const s = el("div", "select"), sel = el("select"); sel.id = id;
+      c.options.forEach(([val, l]) => { const o = el("option", "", esc(l)); o.value = val; sel.appendChild(o); });
+      sel.addEventListener("change", () => { op.s[c.key] = sel.value; update(op); });
+      s.append(sel); s.insertAdjacentHTML("beforeend", ICON.chevD); box.appendChild(s);
+      ui.push({ c, box, sync: () => { sel.value = op.s[c.key]; } });
+    } else if (c.type === "chips") {
+      const sw = el("div", "switcher"); sw.setAttribute("role", "group"); sw.id = id;
+      const btns = c.options.map(([val, l]) => { const b = el("button", "", esc(l)); b.type = "button"; b.addEventListener("click", () => { op.s[c.key] = val; update(op); }); sw.appendChild(b); return [val, b]; });
+      box.appendChild(sw); lab.removeAttribute("for"); sw.setAttribute("aria-label", c.name || c.label);
+      ui.push({ c, box, sync: () => btns.forEach(([val, b]) => b.setAttribute("aria-pressed", op.s[c.key] === val)) });
+    } else {
+      const row = el("div", "actions"); lab.removeAttribute("for");
+      c.items.forEach(([l, act], k) => { const b = el("button", "btn btn-sm " + (c.type === "buttons" && k === 0 ? "btn-primary" : "btn-secondary"), esc(l)); b.type = "button"; b.addEventListener("click", () => { typeof act === "function" ? act(op.s) : Object.assign(op.s, act); update(op); }); row.appendChild(b); });
+      box.appendChild(row); ui.push({ c, box, sync: () => {} });
+    }
+    box.addEventListener("pointerenter", () => { if (c.key) highlight(c.key); });
+    box.addEventListener("pointerleave", () => highlight(null));
+    box.addEventListener("focusin", () => { if (c.key) highlight(c.key); });
+    wrap.appendChild(box);
+  });
+  return { wrap, ui };
+}
+
+/* ---------- image panel ---------- */
+function buildStage(op) {
+  const fr = $("frames"); fr.innerHTML = ""; fr.classList.toggle("single", !!op.single);
+  const v = { cv: [], caps: [], imgs: [], panes: [], frames: [], ex: {} };
+  op.panes.forEach((label, i) => {
+    const pane = el("figure", "pane"), frame = el("div", "frame" + (op.nativeOut && i === 1 ? " tl" : "")), cv = el("canvas");
+    cv.setAttribute("role", "img"); cv.setAttribute("aria-label", label); frame.appendChild(cv);
+    if (i === 1) frame.appendChild(el("div", "wait", "Run the code in step 2 to see the output"));
+    const cap = el("figcaption", "cap"), d = el("span", "d"); cap.append(el("span", "", esc(label)), d);
+    pane.append(frame, cap); fr.appendChild(pane);
+    v.cv.push(cv); v.caps.push(d); v.panes.push(pane); v.frames.push(frame);
+  });
+  v.show = (i, img, note) => {
+    const cv = v.cv[i]; cv.width = img.w; cv.height = img.h; cv.getContext("2d").putImageData(toID(img), 0, 0); v.imgs[i] = img;
+    if (op.nativeOut && i === 1) { cv.style.width = (img.w / N * 100) + "%"; cv.style.height = "auto"; }
+    else { const m = Math.max(img.w, img.h); cv.style.width = (img.w / m * 100) + "%"; cv.style.height = (img.h / m * 100) + "%"; }
+    v.caps[i].textContent = (note ? note + " · " : "") + `${img.w} × ${img.h}`;
+  };
+  v.box = s => { const x = v.cv[0].getContext("2d"), w = s.r - s.l - 1, h = s.lo - s.u - 1; x.lineWidth = 3; x.strokeStyle = "#000"; x.strokeRect(s.l + 0.5, s.u + 0.5, w, h); x.lineWidth = 1; x.strokeStyle = "#fff"; x.strokeRect(s.l + 0.5, s.u + 0.5, w, h); };
+  const ro = $("readout"), idle = op.single ? "Hover the histogram in step 3 to read pixel counts." : "Hover an image to read pixel values.";
+  ro.textContent = idle;
+  v.cv.forEach((cv, i) => {
+    cv.addEventListener("pointermove", e => {
+      const img = v.imgs[i]; if (!img || (i === 1 && op.step < 3)) return; const r = cv.getBoundingClientRect();
+      const x = Math.floor((e.clientX - r.left) / r.width * img.w), y = Math.floor((e.clientY - r.top) / r.height * img.h);
+      if (x < 0 || y < 0 || x >= img.w || y >= img.h) return;
+      let t = `x ${x}, y ${y}\n${op.panes[i].split(" · ")[0]}: ${fmtPx(img, x, y)}`;
+      if (op.pixelwise && op.step >= 3 && v.imgs[1] && v.imgs[1].w === v.imgs[0].w && v.imgs[1].h === v.imgs[0].h) t = `x ${x}, y ${y}\n${fmtPx(v.imgs[0], x, y)}  →  ${fmtPx(v.imgs[1], x, y)}`;
+      ro.textContent = t;
+    });
+    cv.addEventListener("pointerleave", () => { ro.textContent = idle; });
+  });
+  if (op.region) {
+    const fr0 = v.frames[0], cv = v.cv[0]; fr0.classList.add("drag"); let start = null;
+    const pt = e => { const r = cv.getBoundingClientRect(); return [Math.round(Math.min(N, Math.max(0, (e.clientX - r.left) / r.width * N))), Math.round(Math.min(N, Math.max(0, (e.clientY - r.top) / r.height * N)))]; };
+    fr0.addEventListener("pointerdown", e => { start = pt(e); fr0.setPointerCapture(e.pointerId); e.preventDefault(); });
+    fr0.addEventListener("pointermove", e => { if (!start) return; const p = pt(e), l = Math.min(start[0], p[0]), r = Math.max(start[0], p[0]), u = Math.min(start[1], p[1]), lo = Math.max(start[1], p[1]); if (r - l >= 4 && lo - u >= 4) { Object.assign(op.s, { l, r, u, lo }); update(op); } });
+    const end = () => { start = null; }; fr0.addEventListener("pointerup", end); fr0.addEventListener("pointercancel", end);
+  }
+  return v;
+}
+
+/* ---------- wizard ---------- */
+function stepEl(n, title, total) {
+  const s = el("section", "step"); s.dataset.n = n;
+  const ic = el("div", "step-ic"), body = el("div", "step-body"), lab = el("div", "step-label");
+  lab.append(el("span", "eyebrow", `Step ${n} of ${total}`), el("h2", "", title)); body.appendChild(lab);
+  s.append(ic, body); return [s, body, ic];
+}
+function buildTabs(op) {
+  const bar = el("div", "tabs");
+  if (op.libs) {
+    bar.setAttribute("role", "tablist"); bar.setAttribute("aria-label", "Library");
+    const tabs = [["pil", "Pillow"], ["cv", "OpenCV"]].map(([id, l]) => { const t = el("button", "tab", l); t.type = "button"; t.setAttribute("role", "tab"); t.dataset.lib = id; t.addEventListener("click", () => setLib(id)); bar.appendChild(t); return t; });
+    bar.addEventListener("keydown", e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); setLib(LIB === "pil" ? "cv" : "pil"); bar.querySelector(`[data-lib="${LIB}"]`).focus(); } });
+    bar.appendChild(el("span", "tabs-note", "Same operation, two libraries"));
+    return { bar, sync: () => tabs.forEach(t => { const on = t.dataset.lib === LIB; t.setAttribute("aria-selected", on); t.tabIndex = on ? 0 : -1; }) };
+  }
+  const t = el("span", "tab static", esc(op.libLabel)); t.setAttribute("aria-selected", "true"); bar.appendChild(t);
+  bar.appendChild(el("span", "tabs-note", op.libLabel === "NumPy" ? "Plain NumPy, works with both libraries" : `${op.libLabel} only in the lab`));
+  return { bar, sync: () => {} };
+}
+function setLib(id) { LIB = id; store.set("pixelops-lib", id); if (cur) { cur.hlKey = null; hideTip(); update(cur, true); } }
+const isDefault = op => Object.keys(op.defaults).every(k => op.s[k] === op.defaults[k]) && !op.s.zeroed;
+function resetOp(op) { Object.keys(op.s).forEach(k => { if (k !== "lib" && !(k in op.defaults)) delete op.s[k]; }); Object.assign(op.s, op.defaults); update(op, true); }
+
+function open(op) {
+  cur = op; op.hlKey = null;
+  const i = OPS.indexOf(op), g = groupOf(op), wz = $("wizard"); wz.innerHTML = "";
+  document.title = op.title + " · Pixel Ops";
+  $("crumb").textContent = `${g.title} / ${op.title}`;
+  OPS.forEach(o => { o.menuLink.classList.toggle("on", o === op); o.menuLink.classList.toggle("done", o.step >= 3); if (o === op) o.menuLink.setAttribute("aria-current", "page"); else o.menuLink.removeAttribute("aria-current"); });
+
+  const head = el("header", "wz-head"); head.append(el("span", "eyebrow", `${esc(g.lab)} · Operation ${i + 1} of ${OPS.length}`), el("h1", "", esc(op.title))); wz.appendChild(head);
+  const steps = el("div", "steps"); wz.appendChild(steps);
+
+  /* step 3 only when it adds something: charts and kernels, or an extra line of code to run */
+  const three = !!op.run3 || !!(op.extras && op.extras.length), total = three ? 3 : 2;
+  const [s1, b1, i1] = stepEl(1, "The operation", total);
+  b1.appendChild(el("p", "", esc(op.text)));
+  const next1 = el("button", "btn btn-primary", `Show the code ${ICON.arrowD}`); next1.type = "button"; b1.appendChild(next1);
+
+  const [s2, b2, i2] = stepEl(2, "The code", total);
+  b2.appendChild(el("p", "helper", (op.libs ? "Pillow and OpenCV write this differently, so switch tabs to compare. " : "") + "Hover or tap any underlined part of the code to see what it does. The blue values are editable: click one and type a new value, or use the controls below."));
+  const card = el("div", "snippet"), tabs = buildTabs(op), pre = el("pre", "code");
+  pre.setAttribute("aria-label", "Code"); if (op.libs) pre.setAttribute("role", "tabpanel");
+  const rb = el("button", "tbtn", ICON.reset); rb.type = "button"; rb.setAttribute("aria-label", "Reset the code to its original values");
+  rb.addEventListener("click", () => { hideTip(); resetOp(op); });
+  rb.addEventListener("pointerenter", () => showTip(rb, '<span>Reset the code to its original values</span>')); rb.addEventListener("pointerleave", () => hideTip(80));
+  rb.addEventListener("focus", () => showTip(rb, '<span>Reset the code to its original values</span>')); rb.addEventListener("blur", () => hideTip());
+  tabs.bar.appendChild(rb);
+  const pc = buildControls(op, "code");
+  const foot2 = el("div", "cell-foot"), next2 = el("button", "btn btn-primary", `Run ${ICON.play}`), st2 = el("span", "cell-status");
+  next2.type = "button"; foot2.append(next2, st2);
+  card.append(tabs.bar, pre, foot2, pc.wrap); b2.appendChild(card);
+
+  const [s3, b3, i3] = stepEl(3, "The output", total);
+  b3.appendChild(el("p", "", esc(op.look)));
+  const extras = el("div", "extras"); b3.appendChild(extras);
+  const card3 = el("div", "snippet"), bar3 = el("div", "tabs"), lab3 = el("span", "tab static"), pre3 = el("pre", "code");
+  lab3.setAttribute("aria-selected", "true"); bar3.append(lab3, el("span", "tabs-note", "The code that produced this output")); pre3.setAttribute("aria-label", "Code that produced the output");
+  const rb3 = el("button", "tbtn", ICON.reset); rb3.type = "button"; rb3.setAttribute("aria-label", op.reset3 ? "Undo this cell" : "Reset the code to its original values"); bar3.appendChild(rb3);
+  const foot3 = el("div", "cell-foot"), run3 = el("button", "btn btn-primary", `Run ${ICON.play}`), st3 = el("span", "cell-status");
+  run3.type = "button"; foot3.append(run3, st3);
+  card3.append(bar3, pre3, foot3);
+  const oc = buildControls(op, "output"); if (oc.ui.length) { oc.wrap.classList.remove("bare"); card3.appendChild(oc.wrap); }
+  const tipOn = (b, t) => { b.addEventListener("pointerenter", () => showTip(b, `<span>${t}</span>`)); b.addEventListener("focus", () => showTip(b, `<span>${t}</span>`)); b.addEventListener("pointerleave", () => hideTip(60)); b.addEventListener("blur", () => hideTip()); };
+  tipOn(rb3, op.reset3 ? "Undo this cell: put A back to the original image" : "Reset the code to its original values");
+  rb3.addEventListener("click", () => { hideTip(); if (op.reset3) { op.reset3(op.s); op.ran3 = 0; update(op, true); } else resetOp(op); });
+  run3.addEventListener("click", () => { if (op.run3) op.run3(op.s); op.ran3 = ++EXEC; op.ran2 = op.ran2 || EXEC; update(op, true); });
+  b3.insertBefore(card3, extras); card3.hidden = !op.run3;
+  const nav = el("div", "nextrow");
+  if (i < OPS.length - 1) { const n = OPS[i + 1], a = el("a", "btn btn-primary", `Next: ${esc(n.title)} ${ICON.arrowR}`); a.href = "#" + n.id; nav.appendChild(a); }
+  if (i > 0) { const p = OPS[i - 1], a = el("a", "btn btn-ghost", `${ICON.arrowL} ${esc(p.title)}`); a.href = "#" + p.id; a.style.gap = "8px"; nav.appendChild(a); }
+  const res = el("div", "result"); res.append(el("span", "eyebrow", "Output · shown in the image panel"), el("p", "", esc(op.look)));
+  if (three) b3.appendChild(nav); else { res.appendChild(nav); b2.appendChild(res); }
+  steps.append(s1, s2, s3);
+
+  op.dom = { three, res, params: pc.wrap, params3: oc.wrap, code: pre, code3: pre3, lab3, card, tabs, reset: rb, reset3: rb3, st2, st3, ui: [...pc.ui, ...oc.ui], steps: [s1, s2, s3], icons: [i1, i2, i3], btns: [next1, next2] };
+  op.v = buildStage(op);
+  (op.extras || []).forEach(([kind, label, grow]) => {
+    if (kind === "kernel") { const n = el("div", "kgrids"); extras.appendChild(n); op.v.ex.kernel = n; return; }
+    const box = el("div", "extra" + (grow ? " grow" : "")); if (label) box.appendChild(el("span", "lbl", esc(label)));
+    const node = kind === "hist" || kind === "sigma" ? el("canvas") : kind === "curve" ? el("canvas", "sq") : el("div", kind);
+    if (node.tagName === "CANVAS") node.setAttribute("role", "img"), node.setAttribute("aria-label", label || kind);
+    box.appendChild(node); extras.appendChild(box); op.v.ex[kind] = node;
+  });
+  if (op.v.ex.hist) {
+    const hc = op.v.ex.hist, ro = $("readout");
+    hc.addEventListener("pointermove", e => { const H = hc._hist; if (!H) return; const r = hc.getBoundingClientRect(), bin = Math.round(Math.min(255, Math.max(0, (e.clientX - r.left - H.l) / (H.r - H.l) * 255))); const names = op.id === "histogram" ? ["red", "green", "blue"] : ["before", "after"]; ro.textContent = `intensity ${bin}\n` + H.series.map((s, k) => (H.series.length > 1 ? names[k] + " " : "") + s.h[bin].toLocaleString() + " px").join("   "); });
+  }
+
+  [pre, pre3].forEach(pre => {
+  const tokenOf = e => e.target.closest(".tk, .pm");
+  pre.addEventListener("pointerover", e => { const t = tokenOf(e); if (!t) return; if (t.classList.contains("pm")) highlight(t.dataset.key); const anchor = t.querySelector("input, select") || t; if (tipFor && tipFor.matches(":focus") && tipFor !== anchor) return; showTip(anchor, tipHtmlFor(t)); });
+  pre.addEventListener("pointerout", e => { const t = tokenOf(e); if (!t || t.contains(e.relatedTarget)) return; if (t.classList.contains("pm")) highlight(null); if (!(tipFor && tipFor.matches(":focus"))) hideTip(120); });
+  pre.addEventListener("focusin", e => { const t = tokenOf(e); if (!t) return; if (t.classList.contains("pm")) highlight(t.dataset.key); showTip(e.target, tipHtmlFor(t)); });
+  pre.addEventListener("focusout", e => { const t = tokenOf(e); if (t && t.classList.contains("pm")) highlight(null); hideTip(80); });
+  pre.addEventListener("click", e => { const t = e.target.closest(".tk"); if (!t) return; if (tipFor === t && !tipEl.hidden) hideTip(); else showTip(t, tipHtmlFor(t)); });
+  pre.addEventListener("keydown", e => { const t = e.target.closest(".tk"); if (t && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); showTip(t, tipHtmlFor(t)); } if (e.key === "Escape") hideTip(); });
+  });
+
+  next1.addEventListener("click", () => reveal(op, 2));
+  next2.addEventListener("click", () => { op.ran2 = ++EXEC; reveal(op, 3); });
+  applyStep(op, false);
+  update(op, true);
+  window.scrollTo({ top: 0 });
+}
+function applyStep(op, animate) {
+  const { steps, icons, btns } = op.dom;
+  steps[1].hidden = op.step < 2; steps[2].hidden = op.step < 3 || !op.dom.three; op.dom.res.hidden = op.dom.three || op.step < 3;
+  btns[0].hidden = op.step >= 2;
+  steps.forEach((s, k) => { const n = k + 1, done = n < op.step || (n === 3 && op.step >= 3); s.classList.toggle("complete", n < op.step); icons[k].innerHTML = done ? ICON.done : ICON.current; icons[k].setAttribute("aria-label", done ? "Complete" : "Current"); });
+  op.v.panes[1] && op.v.panes[1].classList.toggle("pending", op.step < 3);
+  $("stageHint").textContent = op.single ? "Input" : op.step >= 3 ? "Input and output" : "Input";
+  op.menuLink.classList.toggle("done", op.step >= 3);
+  if (animate) { const s = op.step === 3 && !op.dom.three ? op.dom.res : steps[op.step - 1]; if (!reduceMotion) { s.classList.remove("enter"); void s.offsetWidth; s.classList.add("enter"); } requestAnimationFrame(() => scrollToStep(s)); }
+}
+/* bring a step's heading to the top of the visible area, below the header and, on phones, below the pinned image panel */
+function scrollToStep(s) {
+  const stage = $("stage"), pinned = getComputedStyle(stage).order === "-1";
+  const offset = (pinned ? stage.getBoundingClientRect().bottom : document.querySelector(".hdr").getBoundingClientRect().bottom) + 16;
+  window.scrollTo({ top: Math.max(0, s.getBoundingClientRect().top + window.scrollY - offset), behavior: reduceMotion ? "auto" : "smooth" });
+}
+function reveal(op, n) { op.step = Math.max(op.step, n); applyStep(op, true); update(op, true); }
+
+let pend = false;
+function update(op, now, editing) {
+  if (op !== cur) return;
+  const go = () => {
+    pend = false;
+    if (op.libs) op.s.lib = LIB;
+    try { op.run(op.s, op.v); } catch (e) { console.error(e); $("readout").textContent = "This step hit an error: " + e.message; }
+    const host = editing && editing.closest("pre");
+    [op.dom.code, op.dom.code3].forEach(p => {
+      if (p === host) p.querySelectorAll(`.pm-in[data-key="${editing.dataset.key}"]`).forEach(x => { if (x !== editing) { x.value = editing.value; x.style.width = editing.style.width; x.closest(".pm").classList.remove("bad"); } });
+      else renderCode(p, op, p === op.dom.code3);
+    });
+    op.dom.st2.textContent = op.ran2 ? `Ran [${op.ran2}] · the output updates live as you edit` : "Not run yet";
+    op.dom.st3.textContent = op.run3 ? (op.ran3 ? `Ran [${op.ran3}] · ${op.ranMsg ? op.ranMsg(op.s) : "done"}` : "Not run yet · " + (op.waitMsg || "")) : `Ran [${op.ran3 || op.ran2 || 1}] · this is the code behind the output`;
+    op.dom.reset3.disabled = op.reset3 ? !op.ran3 : isDefault(op); op.dom.lab3.textContent = op.libs ? (LIB === "pil" ? "Pillow" : "OpenCV") : op.libLabel;
+    op.dom.tabs.sync(); op.dom.reset.disabled = isDefault(op);
+    /* a choice already editable as a dropdown in the code doesn't get a second control below it */
+    op.dom.ui.forEach(u => { u.sync(); u.box.hidden = (u.c.show && !u.c.show(op.s)) || (u.c.type === "chips" && !!op.dom.code.querySelector(`.pm-sel[data-key="${u.c.key}"]`)); });
+    [op.dom.params, op.dom.params3].forEach(w => { if (w) w.hidden = ![...w.children].some(ch => !ch.hidden); });
+  };
+  if (now) return go();
+  if (pend) return; pend = true; requestAnimationFrame(go);
+}
+
+/* ---------- routing ---------- */
+function route() { const id = location.hash.slice(1); open(OPS.find(o => o.id === id) || OPS[0]); }
+addEventListener("hashchange", route);
+
+/* ---------- image source ---------- */
+function setSource(img, name) {
+  SRC = img; GRAY = toGray(img); SVD = null;
+  $("srcName").textContent = name + " · 256 × 256"; $("srcName2").textContent = name;
+  if (cur) update(cur, true);
+}
+function onFile(e) {
+  const f = e.target.files[0]; if (!f) return;
+  const url = URL.createObjectURL(f), im = new Image();
+  im.onload = () => {
+    const c = document.createElement("canvas"); c.width = c.height = N; const x = c.getContext("2d"), m = Math.min(im.width, im.height);
+    x.drawImage(im, (im.width - m) / 2, (im.height - m) / 2, m, m, 0, 0, N, N); URL.revokeObjectURL(url);
+    setSource(fromID(x.getImageData(0, 0, N, N)), f.name.length > 28 ? f.name.slice(0, 25) + "…" : f.name);
+  };
+  im.onerror = () => { $("srcName").textContent = "That file could not be read as an image. Try a PNG or JPEG."; };
+  im.src = url; e.target.value = "";
+}
+$("file").addEventListener("change", onFile); $("file2").addEventListener("change", onFile);
+document.querySelectorAll("[data-sample]").forEach(b => b.addEventListener("click", () => { setSource(makeSample(), "Sample city scene"); setMenu(false); }));
+
+const redraw = () => { paintThemeBtn(); if (cur) update(cur, true); };
+sysDark.addEventListener("change", redraw);
+new MutationObserver(redraw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(redraw, 150); });
+
+paintThemeBtn();
+SRC = makeSample(); GRAY = toGray(SRC);
+route();
+
+</script>
+
+</body>
+</html>
