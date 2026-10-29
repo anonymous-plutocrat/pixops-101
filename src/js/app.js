@@ -255,7 +255,7 @@ function resetOp(op) { Object.keys(op.s).forEach(k => { if (k !== "lib" && !(k i
 function open(op) {
   cur = op; op.hlKey = null;
   const i = OPS.indexOf(op), g = groupOf(op), wz = $("wizard"); wz.innerHTML = "";
-  document.title = op.title + " · Pixel Ops";
+  document.title = op.title + " · PixOps 101";
   $("crumb").textContent = `${g.title} / ${op.title}`;
   OPS.forEach(o => { o.menuLink.classList.toggle("on", o === op); o.menuLink.classList.toggle("done", o.step >= 3); if (o === op) o.menuLink.setAttribute("aria-current", "page"); else o.menuLink.removeAttribute("aria-current"); });
 
